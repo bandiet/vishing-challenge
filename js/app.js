@@ -1,11 +1,13 @@
 /* ------------------------------------------------------------
    Vishing Challenge — im Format der Phishing Challenge 2.0
-   Start (Titel, Welle, fliegende Symbole) → Intro ohne Stimme
-   (Stimmklon-Werkbank) → Level 1 (3 Anrufe) → Level-Auswertung
+   Start (Titel, Welle, fliegende Symbole) → „Bereit für Level 1?“ → Intro
+   ohne Stimme (Stimmklon-Werkbank) → Level 1 (3 Anrufe) → Level-Auswertung
    → Sicherheitstipp (Vishing-Nugget, Frage am Ende) → Level 2 (3 Anrufe)
-   → Level-Auswertung → Auswertung. Punkte = die Beute des Hackers (je weniger, desto besser).
+   → Level-Auswertung → Auswertung. Punkte = die Beute des Hackers (je weniger, desto besser);
+   ein Klick auf die Beute oben holt den Hacker herein.
    Jeder Anruf: Lage → Stille → Klingeln → Gespräch (zwei
-   Wahlrunden) → Urteil im Panel → Feedback (Kernsatz + antippbare Signale).
+   Wahlrunden) → Urteil im Panel → Feedback im Panel wie in der Phishing Challenge
+   (Ergebnis + das Entscheidende, dann auf Wunsch die Signale einzeln, zum Schluss „Das schützt dich“).
    Sprünge zum Testen: #intro, #l1, #l2, #anruf1 … #anruf6, #e1, #e2, #pause, #frage, #ende
    ------------------------------------------------------------ */
 (function () {
@@ -21,7 +23,7 @@
 
   const S = {
     i: 0, level: 0, ergebnisse: [], beute: 0, pause: null, pauseFertig: false,
-    cc: false, lauf: null, epoche: 0, karte: 0
+    cc: false, lauf: null, epoche: 0, karte: 0, introGesehen: false
   };
   const f = (t, w) => String(t).replace(/\{(\w+)\}/g, (m, k) => (w && k in w ? w[k] : m));
 
@@ -137,6 +139,39 @@
   }
   const konfetti = (menge, farben) => window.Feier && Feier.konfetti(menge, farben);
 
+  // gemischter Beutel: jede Zeile kommt einmal dran, dann wird neu gemischt (nie zweimal hintereinander dieselbe)
+  const beutel = {};
+  function ausBeutel(name, liste) {
+    let b = beutel[name];
+    if (!b || !b.rest.length) {
+      const neu = liste.slice().sort(() => Math.random() - .5);
+      if (b && neu.length > 1 && neu[0] === b.zuletzt) neu.push(neu.shift());
+      b = beutel[name] = { rest: neu, zuletzt: b && b.zuletzt };
+    }
+    b.zuletzt = b.rest.shift();
+    return b.zuletzt;
+  }
+
+  // Hacker wie in der Phishing Challenge: fliegt schräg von links herein und sagt etwas.
+  // freut = hat gewonnen (zwinkert, lacht), aergert = durchschaut (große Augen, Schweiß), gaehnt = langweilt sich
+  const hacker = (() => {
+    const el = $('hacker'), blase = $('hacker-blase');
+    let t = 0, t2 = 0;
+    return {
+      zeige(stimmung, text) {
+        clearTimeout(t); clearTimeout(t2);
+        blase.textContent = text;
+        el.className = 'hacker ' + stimmung;
+        void el.offsetWidth;
+        el.classList.add('da');
+        K.fx.whoosh();
+        t2 = setTimeout(() => ({ freut: K.fx.hackerHaha, aergert: K.fx.hackerGrr, gaehnt: K.fx.hackerGaehn }[stimmung])(), 650);
+        t = setTimeout(() => el.classList.remove('da'), Math.min(6500, 2600 + text.length * 40));   // lange Sätze bleiben länger
+      },
+      weg() { clearTimeout(t); clearTimeout(t2); el.classList.remove('da'); }
+    };
+  })();
+
   // Text Zeichen für Zeichen schreiben (Hacker-Sprechblase, Werkbank-Kopf)
   function tippe(el, text, tempo, ton) {
     el.textContent = '';
@@ -214,14 +249,13 @@
     welle($('start-welle'));
     $('start-los').addEventListener('click', () => {
       K.init(); K.fx.klick();
-      K.musik('intro', 0.55, 1.2);
       vorladen(C.anrufe[0]);
       neuesSpiel();
-      intro();
+      levelIntro(0);
     });
   }
 
-  /* ================= Intro ================= */
+  /* ================= Intro (nach „Bereit für Level 1?“, endet mit „Gleich klingelt dein Telefon.“) ================= */
   let introAbbruch = false;
 
   async function intro() {
@@ -229,6 +263,7 @@
     introAbbruch = false;
     const ep = ++S.epoche;
     const ok = () => !introAbbruch && ep === S.epoche;
+    K.musik('intro', 0.55, 1.2);
     $('intro-skip').textContent = C.intro.skip;
     tippe($('kit-kopf').querySelector('span'), C.intro.kopf, 40);
     await warte(700);
@@ -236,7 +271,13 @@
       if (!ok()) return;
       await beatZeigen(b, ok);
     }
-    if (ok()) levelIntro(0);
+    if (ok()) introFertig();
+  }
+  // nach dem Intro klingelt sofort der erste Anruf – in Stille; beim Neustart kommt das Intro nicht noch einmal
+  function introFertig() {
+    S.introGesehen = true;
+    hudAufbauen();
+    anrufStarten(lvStart(0), { still: true });
   }
 
   async function beatZeigen(b, ok) {
@@ -251,7 +292,7 @@
     beat.classList.remove('raus'); void beat.offsetWidth; beat.classList.add('rein');
 
     if (b.art === 'ring') {
-      K.musik('intro', 0.3, 2.6);   // leiser – sie läuft beim Level-Start weiter und bricht erst vor dem Klingeln ab
+      K.musikAus(2.6);   // danach ist es still, bis das Telefon klingelt
       await warte(2600);
       beat.classList.remove('rein'); beat.classList.add('raus');
       await warte(900);
@@ -300,8 +341,9 @@
   }
 
   $('intro-skip').addEventListener('click', () => {
-    introAbbruch = true; K.fx.klick(); K.musik('intro', 0.3, 0.8);
-    levelIntro(0);
+    if (app.dataset.screen !== 's-intro') return;
+    introAbbruch = true; K.fx.klick(); K.musikAus(0.8);
+    introFertig();
   });
 
   /* ================= Spiel ================= */
@@ -344,6 +386,12 @@
       if (f < 1) requestAnimationFrame(schritt); else setTimeout(() => box.classList.remove('steigt'), 700);
     })(t0);
   }
+  // Klick auf die Beute: der Hacker fliegt herein und sagt, was er von seiner Kasse hält
+  $('hud-beute').addEventListener('click', () => {
+    const b = S.beute, stufe = !b ? 'leer' : b <= 1000 ? 'klein' : b <= 100000 ? 'mittel' : 'gross';
+    K.fx.klick();
+    hacker.zeige({ leer: 'aergert', klein: 'gaehnt', mittel: 'freut', gross: 'freut' }[stufe], f(ausBeutel('kasse-' + stufe, C.hackerKasse[stufe]), { beute: euro(b) }));
+  });
   // Live-Untertitel: standardmäßig aus, der Schalter im Panel blendet sie ein und aus
   function untertitelSetzen(an) {
     S.cc = an; $('cc-schalter').setAttribute('aria-checked', an); app.classList.toggle('ohne-cc', !an);
@@ -376,7 +424,7 @@
     S.lauf = { pfad: [], zuege: [], runde: 0, aufgelegt: false, beendet: false };
     if (app.dataset.screen !== 's-spiel') zeige('s-spiel');
     hudAktualisieren();
-    $('urteil').hidden = true; $('feedback').hidden = true;
+    $('urteil').hidden = true; $('feedback').hidden = true; delete $('s-spiel').dataset.phase;
     $('wahl').hidden = true; $('cc-nochmal').hidden = true;
     $('cc-log').innerHTML = '<p class="cc-leer">Noch kein Gespräch.</p>';
     $('ablehnen-tipp').hidden = true; $('geraet-ende').hidden = true;
@@ -683,100 +731,127 @@
     }, reduziert ? 0 : 520);
   }
 
-  /* ================= Feedback ================= */
+  /* ================= Feedback im Panel (wie in der Phishing Challenge) =================
+     Schritt 1: Ergebnis, allgemeine Rückmeldung, das Entscheidende – der Hacker fliegt kurz herein.
+     Schritt 2 („Details anzeigen“): die Signale einzeln, zum Schluss „Das schützt dich“. */
+  const H_ICON = {
+    rot: '<svg class="ico" viewBox="0 0 24 24"><path d="M12 4 2.8 19.5h18.4L12 4Z"/><path d="M12 10v4M12 17h.01"/></svg>',
+    gruen: '<svg class="ico" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+    info: '<svg class="ico" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3Z"/></svg>',
+    schutz: '<svg class="ico" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m8.6 12 2.4 2.4 4.4-4.9"/></svg>'
+  };
+  const CHEVRON = '<svg class="ico h-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>';
+  const schmal = () => innerWidth < 960;
+  let FB = null;
+
   function feedbackZeigen(erg, kasseVorher) {
-    const a = S.a, F = C.feedback;
+    const a = S.a, F = C.feedback, ep = S.epoche;
     let art;
     if (!a.echt) art = erg.zuSpaet ? 'zuSpaet' : (erg.richtig ? 'entlarvt' : 'getaeuscht');
     else art = erg.richtig ? 'echtErkannt' : 'fehlalarm';
-    const blatt = $('fb-blatt');
-    blatt.dataset.art = art;
-    $('fb-stempel').textContent = F[art].stempel;
-    $('fb-kicker').textContent = `${C.hud.anruf} ${S.i + 1} · ${a.echt ? 'Echter Anruf' : 'KI-Fake'}`;
+    const gut = istRichtig(erg);
+    const fb = $('feedback');
+    fb.className = 'fb ' + (gut ? 'fb-ja' : 'fb-nein');
+    fb.dataset.stufe = '1';
+    $('fb-ikon').innerHTML = `<svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="21"/><path d="${gut ? 'M14.5 24.5l6.5 6.5 12.5-14' : 'M17 17l14 14M31 17 17 31'}"/></svg>`;
     $('fb-titel').textContent = F[art].titel;
-    const sub = art === 'zuSpaet' ? a.schadenText : art === 'fehlalarm' ? F.fehlalarmSub : art === 'getaeuscht' ? `Der Hacker kassiert: ${a.beuteText}.` : '';
-    $('fb-sub').textContent = sub; $('fb-sub').hidden = !sub;
-    const fbBeute = $('fb-punkte');
-    fbBeute.hidden = a.echt;
-    fbBeute.classList.toggle('null', !erg.beute);
-    // Die Beute dieses Anrufs zählt sichtbar im Blatt hoch, die Kasse darunter mit; die Anzeige oben im Spiel wird still nachgezogen
-    fbBeute.classList.remove('zaehlt');
-    fbBeute.innerHTML = erg.beute
-      ? `<b>+0 €</b><span>${F.beute}</span><small>${F.kasse} <em>${euro(kasseVorher)}</em></small>`
-      : `<b>0 €</b><span>${F.beute} · ${F.beuteNull}</span><small>${F.kasse} <em>${euro(S.beute)}</em></small>`;
-    $('hud-beute-wert').textContent = euro(S.beute);
-    if (erg.beute) setTimeout(() => {
-      fbBeute.classList.add('zaehlt');
-      const plus = fbBeute.querySelector('b'), summe = fbBeute.querySelector('em');
-      const t0 = performance.now(), dauer = reduziert ? 1 : 1500; let n = 0;
-      (function schritt(t) {
-        const f = Math.min(1, (t - t0) / dauer), e = 1 - Math.pow(1 - f, 3);
-        plus.textContent = '+' + euro(Math.round(erg.beute * e));
-        summe.textContent = euro(Math.round(kasseVorher + erg.beute * e));
-        if (n++ % 3 === 0 && f < 1) K.fx.muenze(n);
-        if (f < 1) requestAnimationFrame(schritt);
-      })(t0);
-    }, 1200);
-
-    const h = a.hacker;
-    const gewonnen = a.echt ? erg.richtig : (erg.richtig && !erg.zuSpaet);
-    $('fb-hacker').dataset.stimmung = gewonnen ? 'sauer' : 'froh';
-    $('fb-hacker-text').textContent = '';
-    setTimeout(() => tippe($('fb-hacker-text'), a.echt ? (erg.richtig ? h.echt : h.fehlalarm) : (gewonnen ? h.erwischt : h.reingelegt), 24, true), 650);
-
+    $('fb-wahr').textContent = f(F[art].text, { beute: a.beuteText || '', schaden: a.schadenText || '' });
     $('fb-kern-label').textContent = F.kern;
     $('fb-kern-text').textContent = a.kern;
 
-    // Signale als Chips – Details nur auf Wunsch
-    $('fb-signale-titel').textContent = a.echt ? F.signaleEcht : F.signaleFake;
-    $('fb-antippen').textContent = F.antippen;
-    const sig = a.signale.filter(s => (!s.wenn || erg.pfad.includes(s.wenn)) && (!s.wennNicht || !erg.pfad.includes(s.wennNicht)));
-    const chips = $('fb-signale'), detail = $('fb-signal-detail');
-    detail.hidden = true;
-    chips.innerHTML = sig.map((s, i) => `<button class="chip chip-${s.art}" type="button" role="listitem" data-i="${i}" style="--i:${i}" aria-expanded="false">${esc(s.titel)}</button>`).join('');
-    chips.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => {
-      const offen = b.getAttribute('aria-expanded') === 'true';
-      chips.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-expanded', 'false'));
-      if (offen) { detail.hidden = true; return; }
-      const s = sig[+b.dataset.i];
-      b.setAttribute('aria-expanded', 'true');
-      detail.className = 'chip-detail detail-' + s.art;
-      detail.innerHTML = `<b>${esc(s.titel)}</b><span>${esc(s.text)}</span>`;
-      detail.hidden = false;
-      K.fx.aufdecken();
-    }));
-    if (!reduziert) sig.forEach((s, i) => setTimeout(() => K.fx.pop(i), 900 + i * 110));
+    // Hinweise: die Signale dieses Gesprächs (je nach Gesprächsverlauf), zum Schluss „Das schützt dich“
+    const liste = a.signale.filter(s => (!s.wenn || erg.pfad.includes(s.wenn)) && (!s.wennNicht || !erg.pfad.includes(s.wennNicht)))
+      .map(s => ({ art: s.art, label: F.art[s.art], titel: s.titel, text: s.text }))
+      .concat({ art: 'schutz', label: F.art.schutz, titel: F.tipp, text: a.tipp });
+    $('fb-liste').innerHTML = liste.map((h, i) => `<li class="h-karte h-${h.art}" style="--i:${i}">
+        <button class="h-kopf" type="button" aria-expanded="false"><span class="h-nr">${H_ICON[h.art]}</span>
+          <span class="h-kopf-text"><small class="h-art">${esc(h.label)}</small><b class="h-titel">${esc(h.titel)}</b></span>${CHEVRON}</button>
+        <div class="h-body"><div class="h-body-innen"><p>${esc(h.text)}</p></div></div></li>`).join('');
+    $('fb-dots').innerHTML = liste.map(() => '<i></i>').join('');
+    $('fb-liste').querySelectorAll('.h-kopf').forEach((k, i) => k.addEventListener('click', () => { K.fx.klick(); hinweis(i); }));
+    FB = { liste, i: -1, gesehen: new Set(), stufe: 1 };
+    const btn = $('fb-weiter');
+    btn.classList.remove('final');
+    btn.innerHTML = `<span>${esc(F.details)}</span>${PFEIL}`;
+    $('fb-skip').textContent = F.ueberspringen; $('fb-skip').classList.remove('weg');
 
-    // Eigene Züge: Etikett + Satz, Kommentar per Antippen
-    $('fb-zuege-titel').textContent = F.zuege;
-    const LABEL = { gut: 'Stark', riskant: 'Riskant', neutral: 'Okay' };
-    let zuege = erg.zuege.map(z => ({ wert: z.o.wert, text: z.o.text, kommentar: z.o.kommentar }));
-    if (erg.aufgelegt) zuege.push({ wert: a.echt ? 'neutral' : 'gut', text: 'Aufgelegt', kommentar: a.echt ? F.aufgelegtEcht : F.aufgelegtFake });
-    $('fb-zuege').innerHTML = zuege.length ? zuege.map((z, i) =>
-      `<button class="zug zug-${z.wert}" type="button" style="--i:${i}" aria-expanded="false"><span class="zug-label">${LABEL[z.wert]}</span><q>${esc(z.text)}</q><span class="zug-mehr">${esc(z.kommentar)}</span></button>`).join('')
-      : '<p class="zug-leer">Kein Gesprächszug.</p>';
-    $('fb-zuege').querySelectorAll('.zug').forEach(b => b.addEventListener('click', () => {
-      const offen = b.getAttribute('aria-expanded') === 'true';
-      b.setAttribute('aria-expanded', String(!offen)); if (!offen) K.fx.aufdecken();
-    }));
-
-    $('fb-tipp-titel').textContent = F.tipp + ':'; $('fb-tipp-text').textContent = a.tipp;
-    const letzterImLevel = S.i === lvStart(S.level) + LV[S.level].anzahl - 1;
-    $('fb-weiter').innerHTML = esc(letzterImLevel ? F.zurLevelAuswertung : F.weiter) + ' ' + PFEIL;
-
-    const fb = $('feedback');
-    fb.hidden = false; fb.scrollTop = 0;
-    blatt.classList.remove('rein'); void blatt.offsetWidth; blatt.classList.add('rein');
-    const st = $('fb-stempel'); st.classList.remove('knall'); void st.offsetWidth; st.classList.add('knall');
-    setTimeout(() => { K.fx.stempel(); (erg.richtig && !erg.zuSpaet ? K.fx.richtig : K.fx.falsch)(); }, 330);
+    $('s-spiel').dataset.phase = 'feedback';
+    fb.hidden = false; fb.scrollTop = 0; $('s-spiel').scrollTop = 0;
+    fb.classList.remove('rein'); void fb.offsetWidth; fb.classList.add('rein');
+    (gut ? K.fx.richtig : K.fx.falsch)();
     K.musik('intro', 0.2, 2);
-    $('fb-weiter').focus({ preventScroll: true });
+    setTimeout(() => btn.focus({ preventScroll: true }), 500);
+    // Kassiert der Hacker, zählt die Kasse oben mit
+    if (erg.beute) setTimeout(() => { if (ep === S.epoche) beuteZaehlen(kasseVorher, S.beute); }, reduziert ? 0 : 900);
+    // Der Hacker fliegt kurz herein: freut sich, wenn er gewonnen hat, ärgert sich, wenn er durchschaut wurde, gähnt bei echten Anrufen
+    const h = a.hacker;
+    const text = a.echt ? (erg.richtig ? h.echt : h.fehlalarm) : (gut ? h.erwischt : h.reingelegt);
+    const stimmung = !gut ? 'freut' : a.echt ? 'gaehnt' : 'aergert';
+    setTimeout(() => { if (ep === S.epoche && FB) hacker.zeige(stimmung, text); }, reduziert ? 0 : 700);
   }
-  $('fb-weiter').addEventListener('click', weiterNachFeedback);
+
+  // Schritt 2: die Hinweise der Reihe nach
+  function details() {
+    const fb = FB;
+    if (!fb || fb.stufe !== 1) return;
+    fb.stufe = 2;
+    $('feedback').dataset.stufe = '2';
+    hinweis(0, true);
+  }
+  function hinweis(i, erster) {
+    const fb = FB, F = C.feedback;
+    if (!fb || fb.stufe !== 2 || i < 0 || i >= fb.liste.length) return;
+    const vorher = fb.i, n = fb.liste.length;
+    fb.i = i; fb.gesehen.add(i);
+    const karten = [...$('fb-liste').children];
+    karten.forEach((k, j) => {
+      k.classList.toggle('aktiv', j === i);
+      k.classList.toggle('gesehen', fb.gesehen.has(j));
+      k.querySelector('.h-kopf').setAttribute('aria-expanded', j === i ? 'true' : 'false');
+    });
+    // schmal steht nur ein Hinweis da: der alte gleitet hinaus, der neue herein (vorwärts nach links, zurück nach rechts)
+    if (schmal() && vorher >= 0 && vorher !== i && !reduziert) {
+      const alt = karten[vorher], neu = karten[i], vor = i > vorher;
+      alt.classList.add('geht', vor ? 'nach-links' : 'nach-rechts');
+      neu.classList.add(vor ? 'von-rechts' : 'von-links');
+      setTimeout(() => alt.classList.remove('geht', 'nach-links', 'nach-rechts'), 360);
+      setTimeout(() => neu.classList.remove('von-rechts', 'von-links'), 420);
+    }
+    [...$('fb-dots').children].forEach((d, j) => { d.className = j === i ? 'jetzt' : fb.gesehen.has(j) ? 'an' : ''; });
+    $('fb-zaehler').textContent = f(F.zaehler, { n: i + 1, gesamt: n });
+    const letzter = i === n - 1;
+    const letzterImLevel = S.i === lvStart(S.level) + LV[S.level].anzahl - 1;
+    const btn = $('fb-weiter');
+    btn.innerHTML = `<span>${esc(letzter ? (letzterImLevel ? F.zurLevelAuswertung : F.naechsterAnruf) : F.weiter)}</span>${PFEIL}`;
+    btn.classList.toggle('final', letzter);
+    $('fb-skip').classList.toggle('weg', letzter);
+    // nur das Panel (bzw. schmal den Spielbildschirm) scrollen, nie scrollIntoView – sonst verschiebt sich im LMS die Seite
+    setTimeout(() => {
+      if (FB !== fb) return;
+      const box = schmal() ? $('s-spiel') : $('feedback'), karte = karten[i];
+      const b = box.getBoundingClientRect(), r = karte.getBoundingClientRect(), fuss = $('feedback').querySelector('.fb-aktionen').offsetHeight;
+      const oben = r.top - b.top - 12, unten = r.bottom - (b.bottom - fuss - 8);
+      const um = oben < 0 ? oben : Math.min(Math.max(0, unten), oben);
+      if (Math.abs(um) > 1) box.scrollTo({ top: box.scrollTop + um, behavior: reduziert ? 'auto' : 'smooth' });
+    }, reduziert ? 0 : 450);
+    if (!erster) K.fx.aufdecken();
+  }
+  function fbWeiter() {
+    const fb = FB;
+    if (!fb) return;
+    K.fx.klick();
+    if (fb.stufe === 1) details();
+    else if (fb.i < fb.liste.length - 1) hinweis(fb.i + 1);
+    else weiterNachFeedback();
+  }
+  $('fb-weiter').addEventListener('click', fbWeiter);
+  $('fb-skip').addEventListener('click', () => { if (FB) { K.fx.klick(); weiterNachFeedback(); } });
   function weiterNachFeedback() {
     if ($('feedback').hidden) return;
-    K.fx.klick();
+    FB = null;
+    hacker.weg();
     $('feedback').hidden = true;
+    delete $('s-spiel').dataset.phase;
     const naechster = S.i + 1;
     if (naechster >= lvStart(S.level) + LV[S.level].anzahl) levelEnde(S.level);
     else anrufStarten(naechster);
@@ -822,6 +897,7 @@
   $('lv-los').addEventListener('click', () => {
     if (app.dataset.screen !== 's-level') return;
     K.fx.klick();
+    if (S.level === 0 && !S.introGesehen) { intro(); return; }
     hudAufbauen();
     anrufStarten(lvStart(S.level));
   });
@@ -1038,7 +1114,7 @@
         hudAufbauen(); anrufStarten(n);
       } else if (l) { S.pauseFertig = +l[1] > 1; levelIntro(Math.min(+l[1] - 1, LV.length - 1)); }
       else if (e) { testErgebnisse(); S.beute = S.ergebnisse.reduce((x, r) => x + r.beute, 0); levelEnde(Math.min(+e[1] - 1, LV.length - 1)); }
-      else if (sprung === 'intro') { K.musik('intro', 0.55, 1.2); intro(); }
+      else if (sprung === 'intro') intro();
       else if (sprung === 'pause') pauseZeigen();
       else if (sprung === 'frage') { pauseZeigen(); frageZeigen(); }
       else if (sprung === 'ende') { testErgebnisse(); S.beute = S.ergebnisse.reduce((x, r) => x + r.beute, 0); ende(); }

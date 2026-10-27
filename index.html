@@ -23,10 +23,10 @@
       <span id="hud-titel"></span>
     </div>
     <div class="hud-rechts">
-      <div class="hud-pille hud-beute" id="hud-beute" hidden title="Hacker-Beute">
+      <button class="hud-pille hud-beute" id="hud-beute" type="button" hidden title="Hacker-Beute">
         <img src="assets/hacker-face.png" alt="">
         <span class="hb-text"><small id="hud-beute-label"></small><b id="hud-beute-wert">0 €</b></span>
-      </div>
+      </button>
       <div class="hud-pille hud-fortschritt" id="hud-fortschritt" hidden>
         <span class="hud-level" id="hud-level"></span>
         <span class="hud-frage"><span id="hud-anruf"></span><span class="hud-segmente" id="hud-punkte"></span></span>
@@ -204,36 +204,25 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Feedback -->
-    <div class="overlay feedback" id="feedback" hidden>
-      <div class="fb-blatt" id="fb-blatt">
+      <!-- Feedback im Panel wie in der Phishing Challenge (ersetzt Lage und Dialog):
+           erst Ergebnis, Rückmeldung und das Entscheidende; „Details anzeigen“ geht die
+           Signale einzeln durch, zum Schluss „Das schützt dich“ -->
+      <aside class="fb" id="feedback" data-stufe="1" hidden>
         <div class="fb-kopf">
-          <div class="stempel" id="fb-stempel"></div>
-          <div class="fb-kopf-text">
-            <p class="kicker" id="fb-kicker"></p>
-            <h2 class="fb-titel" id="fb-titel"></h2>
-            <p class="fb-sub" id="fb-sub"></p>
-          </div>
-          <div class="fb-punkte" id="fb-punkte"></div>
+          <span class="fb-ikon" id="fb-ikon"></span>
+          <div><h2 class="fb-titel" id="fb-titel"></h2><p class="fb-wahr" id="fb-wahr"></p></div>
         </div>
-        <div class="hacker-sagt" id="fb-hacker"><img src="assets/hacker.png" alt=""><p id="fb-hacker-text"></p></div>
-        <div class="kern" id="fb-kern"><span class="kern-label" id="fb-kern-label"></span><p id="fb-kern-text"></p></div>
-        <section class="fb-zeile">
-          <h3><span id="fb-signale-titel"></span><small id="fb-antippen"></small></h3>
-          <div class="chips" id="fb-signale" role="list"></div>
-          <div class="chip-detail" id="fb-signal-detail" hidden></div>
-        </section>
-        <section class="fb-zeile">
-          <h3><span id="fb-zuege-titel"></span></h3>
-          <div class="zuege" id="fb-zuege"></div>
-        </section>
-        <div class="fb-fuss">
-          <p class="tipp" id="fb-tipp"><svg class="ico" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.3 7.5 9.5 4.4-1.2 7.5-4.9 7.5-9.5V6z"/><path d="m8.8 12.2 2.2 2.2 4.4-4.6"/></svg><span><b id="fb-tipp-titel"></b> <span id="fb-tipp-text"></span></span></p>
-          <button class="btn" id="fb-weiter" type="button"></button>
+        <div class="fb-kern"><span class="fb-kern-label" id="fb-kern-label"></span><p id="fb-kern-text"></p></div>
+        <div class="fb-hinweise">
+          <div class="fb-zaehler"><span id="fb-zaehler"></span><span class="fb-dots" id="fb-dots"></span></div>
+          <ol class="h-liste" id="fb-liste"></ol>
         </div>
-      </div>
+        <div class="fb-aktionen">
+          <button class="btn btn-gross btn-primaer" id="fb-weiter" type="button"></button>
+          <button class="link-btn" id="fb-skip" type="button"></button>
+        </div>
+      </aside>
     </div>
   </section>
 
@@ -279,6 +268,53 @@
   </section>
 
   </main>
+
+  <!-- Hacker wie in der Phishing Challenge (SVG): fliegt kurz von links herein und sagt etwas -->
+  <div class="hacker" id="hacker" aria-hidden="true">
+    <div class="hacker-figur">
+      <svg class="hacker-svg" viewBox="0 0 280 540" fill="none">
+        <defs>
+          <filter id="hkSchatten" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="8"/></filter>
+          <linearGradient id="hkSchweiss" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38bdf8"/><stop offset="1" stop-color="#0284c7"/></linearGradient>
+          <linearGradient id="hkKapuze" x1=".2" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#381c5a"/><stop offset=".35" stop-color="#251343"/><stop offset="1" stop-color="#120824"/></linearGradient>
+          <linearGradient id="hkRumpf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#28174a"/><stop offset="1" stop-color="#150b28"/></linearGradient>
+          <linearGradient id="hkStreifen1" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d115e"/><stop offset=".5" stop-color="#b51a77"/><stop offset="1" stop-color="#8d115e"/></linearGradient>
+          <linearGradient id="hkStreifen2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff0066"/><stop offset=".5" stop-color="#ff0d75"/><stop offset="1" stop-color="#ff0066"/></linearGradient>
+          <linearGradient id="hkHand" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ba9379"/><stop offset="1" stop-color="#9a7158"/></linearGradient>
+        </defs>
+        <ellipse cx="140" cy="518" rx="68" ry="16" fill="#322258" opacity=".55" filter="url(#hkSchatten)"/>
+        <g class="hk-rumpf">
+          <path d="M82 410c0 72 116 72 116 0Z" fill="#07040d"/>
+          <path d="M76 330c-2 50 2 110 64 110s66-60 64-110Z" fill="url(#hkRumpf)"/>
+          <path d="M75 352l65 40 65-40-1 20-64 40-64-40Z" fill="url(#hkStreifen1)"/>
+          <path d="M76 388l34 16v36h12v-31l18 10 18-10v31h12v-36l34-16v9l-28 14v29h-12v-24l-24 13-24-13v24h-12v-29l-28-14Z" fill="url(#hkStreifen2)"/>
+        </g>
+        <rect class="hk-hand-l" x="28" y="335" width="34" height="54" rx="17" fill="url(#hkHand)" transform="rotate(-40 45 362)"/>
+        <rect class="hk-hand-r" x="218" y="335" width="34" height="54" rx="17" fill="url(#hkHand)" transform="rotate(40 235 362)"/>
+        <g class="hk-kopf">
+          <path d="M140 10C95 38 12 135 12 215s66 135 128 135 128-55 128-135S185 38 140 10Z" fill="url(#hkKapuze)"/>
+          <path d="M140 55C90 85 26 160 26 225s54 115 114 115 114-50 114-115S190 85 140 55Z" fill="#0d061c"/>
+          <path d="M40 160c-10 25-6 55 6 60-2-15 0-35 6-50Z" fill="#4f2d18"/>
+          <path d="M240 160c10 25 6 55-6 60 2-15 0-35-6-50Z" fill="#4f2d18"/>
+          <path d="M48 165c-22 0-24 37-2 37Z" fill="#a88267"/><path d="M44 172c-12 0-13 23-1 23Z" fill="#865f47"/>
+          <path d="M232 165c22 0 24 37 2 37Z" fill="#a88267"/><path d="M236 172c12 0 13 23 1 23Z" fill="#865f47"/>
+          <path d="M58 172c-4 46 12 106 82 148 70-42 86-102 82-148 0 0-47-32-82-32s-82 32-82 32Z" fill="#fff"/>
+          <path d="M58 172c47-32 117-32 164 0 2-10-37-34-82-34s-84 24-82 34Z" fill="#cbd2db"/>
+          <path class="hk-braue-l" d="M94 175c11-6 26-3 30 1" stroke="#232d3a" stroke-width="5" stroke-linecap="round"/>
+          <path class="hk-braue-r" d="M186 175c-11-6-26-3-30 1" stroke="#232d3a" stroke-width="5" stroke-linecap="round"/>
+          <ellipse class="hk-auge hk-auge-l" cx="107" cy="198" rx="5.5" ry="11" fill="#232d3a"/>
+          <path class="hk-zwinker" d="M96 198q11-11 22 0" stroke="#232d3a" stroke-width="4.5" stroke-linecap="round"/>
+          <ellipse class="hk-auge hk-auge-r" cx="173" cy="198" rx="5.5" ry="11" fill="#232d3a"/>
+          <path class="hk-mund" d="M140 240c-12-6-26-7-33-3 7 9 21 12 33 12s26-3 33-12c-7-4-21-3-33 3Z" fill="#232d3a"/>
+          <rect class="hk-bart" x="137" y="254" width="6.5" height="19" rx="3.25" fill="#232d3a"/>
+          <g class="hk-funkel"><path d="M80 170q0 10-10 10 10 0 10 10 0-10 10-10-10 0-10-10Z" fill="#ff007f"/><circle cx="80" cy="180" r="2.5" fill="#fff"/></g>
+          <g class="hk-schweiss"><path d="M212 144s14 20 14 29-7 15-16 15-16-6-16-15 18-29 18-29Z" fill="url(#hkSchweiss)"/><ellipse cx="206" cy="173" rx="2.5" ry="4" fill="#fff" opacity=".8"/></g>
+          <circle class="hk-schweiss2" cx="225" cy="195" r="3.5" fill="#38bdf8" opacity=".9"/>
+        </g>
+      </svg>
+      <div class="hacker-blase"><span id="hacker-blase"></span></div>
+    </div>
+  </div>
 
   <canvas class="feier" id="feier" aria-hidden="true"></canvas>
 </div>

@@ -308,7 +308,11 @@
     fertig() { init(); ton(1760, 0.05, 0.06, 'square'); ton(2350, 0.08, 0.05, 'square', null, 0.06); },
     // Feedback: Chips poppen auf, Details klappen auf
     pop(i) { ton(900 + (i || 0) * 90, 0.05, 0.05, 'triangle'); },
-    aufdecken() { ton(520, 0.06, 0.06, 'triangle', 780); }
+    aufdecken() { ton(520, 0.06, 0.06, 'triangle', 780); },
+    // Hacker: lacht (hat gewonnen), knurrt (durchschaut), gähnt (echter Anruf, magere Beute)
+    hackerHaha() { init(); [0, 0.11, 0.22].forEach((t, i) => ton(523 - i * 60, 0.09, 0.06, 'triangle', null, t)); ton(330, 0.3, 0.05, 'triangle', null, 0.36); },
+    hackerGrr() { init(); ton(196, 0.32, 0.07, 'sawtooth', 98); rauschen(0.25, 0.04, 1500, 300, 0.05); },
+    hackerGaehn() { init(); ton(300, 0.7, 0.07, 'sine', 150); }
   };
 
   window.Klang = {

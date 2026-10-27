@@ -61,27 +61,34 @@ window.CONTENT = {
     fake: { titel: 'FAKE', text: 'KI-Betrug – auflegen & prüfen' }
   },
 
+  /* Feedback im Panel wie in der Phishing Challenge: titel (Ergebnis), text (allgemeine Rückmeldung;
+     {beute} = beuteText, {schaden} = schadenText des Anrufs), darunter das Entscheidende (kern des Anrufs).
+     „Details anzeigen“ geht die Signale einzeln durch, zum Schluss „Das schützt dich“ (tipp des Anrufs).
+     stempel steht in der Auswertung neben jedem Anruf. */
   feedback: {
-    entlarvt: { stempel: 'Entlarvt', titel: 'Fake erkannt!' },
-    getaeuscht: { stempel: 'Getäuscht', titel: 'Reingelegt!' },
-    echtErkannt: { stempel: 'Echt', titel: 'Richtig – der Anruf war echt.' },
-    fehlalarm: { stempel: 'Fehlalarm', titel: 'Der Anruf war echt.' },
-    zuSpaet: { stempel: 'Zu spät', titel: 'Richtig erkannt – aber zu spät.' },
-    fehlalarmSub: 'Kein Schaden: Lieber einmal zu viel geprüft als einmal zu wenig. Aber hier sprach vieles für einen echten Anruf.',
-    aufgelegtFake: 'Du hast früh aufgelegt – bei einem Fake genau richtig. Auflegen ist immer erlaubt.',
-    aufgelegtEcht: 'Du hast früh aufgelegt. Bei einem echten Anruf kein Drama: Du kannst über die bekannte Nummer zurückrufen.',
+    entlarvt: { stempel: 'Entlarvt', titel: 'Entlarvt!', text: 'Das war ein KI-Fake – und du hast ihn erkannt. Der Hacker geht leer aus.' },
+    getaeuscht: { stempel: 'Getäuscht', titel: 'Getäuscht!', text: 'Das war ein KI-Fake. Der Hacker kassiert: {beute}.' },
+    echtErkannt: { stempel: 'Echt', titel: 'Echt erkannt!', text: 'Richtig – der Anruf war echt.' },
+    fehlalarm: { stempel: 'Fehlalarm', titel: 'Fehlalarm!', text: 'Der Anruf war echt. Kein Schaden: Lieber einmal zu viel geprüft als einmal zu wenig. Aber hier sprach vieles für einen echten Anruf.' },
+    zuSpaet: { stempel: 'Zu spät', titel: 'Zu spät!', text: 'Richtig erkannt – aber zu spät. {schaden} Der Hacker kassiert: {beute}.' },
     kern: 'Das Entscheidende',
-    signaleFake: 'Warnsignale',
-    signaleEcht: 'Was für echt sprach',
-    antippen: 'antippen für Details',
-    zuege: 'Deine Züge',
+    details: 'Details anzeigen',
+    ueberspringen: 'Hinweise überspringen',
+    zaehler: 'Hinweis {n} von {gesamt}',
+    art: { rot: 'Warnsignal', gruen: 'Spricht für echt', info: 'Gut zu wissen', schutz: 'Zum Mitnehmen' },
     tipp: 'Das schützt dich',
-    weiter: 'Nächster Anruf',
-    zurAuswertung: 'Zur Auswertung',
-    zurLevelAuswertung: 'Zur Level-Auswertung',
-    beute: 'Hacker-Beute',
-    beuteNull: 'leer ausgegangen',
-    kasse: 'In der Kasse:'
+    weiter: 'Weiter',
+    naechsterAnruf: 'Nächster Anruf',
+    zurLevelAuswertung: 'Zur Level-Auswertung'
+  },
+
+  /* Klick auf die Hacker-Beute oben: der Hacker fliegt herein und sagt, was er von seiner Kasse hält.
+     leer = 0 €, klein = bis 1.000 €, mittel = bis 100.000 €, gross = darüber; {beute} = der Stand. */
+  hackerKasse: {
+    leer: ['Leer. Komplett leer. 😤', 'Null Euro. Ich sollte umschulen …', 'In meiner Kasse liegt nur Staub. 🕸️', 'Hör auf zu klicken – da ist nichts drin! 😒'],
+    klein: ['{beute}? Das reicht gerade für Pizza. 🍕', 'Kleingeld. Aber ich bin geduldig … 😏', 'Immerhin. Der Anfang ist gemacht. 💰'],
+    mittel: ['{beute}! Das neue Gaming-Setup ist gesichert. 😎', 'Läuft bei mir! 💸', '{beute} – nicht schlecht für ein paar Anrufe. 😈'],
+    gross: ['{beute}! Ich schau mir schon mal Jachten an. 🛥️', 'Danke! Mein Ruhestand rückt näher. 🏝️', 'Ich liebe Telefonieren! 🤑']
   },
 
   /* ---------------- die sechs Anrufe (Reihenfolge = Spielreihenfolge; Level siehe unten) ---------------- */
@@ -102,15 +109,15 @@ window.CONTENT = {
       start: { id: 'c1_0', tts: '[panicked] Hey, ich bin’s, Jonas! Bitte leg nicht auf! Mein Handy ist weg, ich ruf von ’nem fremden Handy an… [breathing heavily] Ich hatte ’nen Unfall mit dem Roller. Mir ist nichts passiert, aber das Auto von dem Mann ist total kaputt. Die Polizei ist hier und sagt, ich muss sofort achthundert Euro Kaution zahlen, sonst nehmen die mich mit. Kannst du mir das schicken? Bitte, jetzt gleich! [pause]' },
       runden: [
         [
-          { text: 'Oh nein! Wohin soll ich das Geld schicken?', wert: 'riskant', kommentar: 'Du warst sofort bereit zu zahlen – genau darauf setzt der Schockanruf.',
+          { text: 'Oh nein! Wohin soll ich das Geld schicken?', wert: 'riskant',
             antwort: { id: 'c1_1a', tts: '[relieved] Danke, danke! Der Polizist hier gibt mir gleich ’ne Kontonummer. Mach bitte ’ne Echtzeitüberweisung, dann ist das Geld sofort da. Aber beeil dich, die werden hier echt ungeduldig! [pause]' } },
-          { text: 'Moment. Wie hieß Omas Katze?', wert: 'gut', kommentar: 'Starke Kontrollfrage: Er konnte sie nicht beantworten und hat nur mehr Druck gemacht.',
+          { text: 'Moment. Wie hieß Omas Katze?', wert: 'gut',
             antwort: { id: 'c1_1b', tts: '[frustrated] Was?! Ich steh hier mit der Polizei und du willst ein Quiz machen?! [sighs] Keine Ahnung, ich bin total durch… Bitte, ich brauch das Geld jetzt, nicht in ’ner Stunde! [pause]' } }
         ],
         [
-          { text: 'Okay. Schick mir die Kontodaten.', wert: 'riskant', kommentar: 'Fast geschafft – für den Betrüger. Und „Sag Mama nichts“ sollte dich isolieren.',
+          { text: 'Okay. Schick mir die Kontodaten.', wert: 'riskant',
             antwort: { id: 'c1_2a', tts: '[relieved] Danke! Ich schick dir alles per WhatsApp. Und… bitte sag Mama nichts, okay? Die flippt sonst total aus. Ich meld mich! [pause]' } },
-          { text: 'Ich leg auf und ruf dich auf deiner normalen Nummer an.', wert: 'gut', kommentar: 'Genau richtig: Rückruf über die bekannte Nummer. Der Anrufer wollte das um jeden Preis verhindern.',
+          { text: 'Ich leg auf und ruf dich auf deiner normalen Nummer an.', wert: 'gut',
             antwort: { id: 'c1_2b', tts: '[panicked] Nein, nein, nicht auflegen! Mein Handy ist doch weg, da erreichst du mich nicht! Bitte, die nehmen mich sonst mit… [pause]' } }
         ]
       ],
@@ -147,15 +154,15 @@ window.CONTENT = {
       start: { id: 'c3_0', tts: 'Hallo, hier ist Marcel vom IT-Helpdesk. Wir sehen gerade, dass Ihr Postfach mit Spam regelrecht bombardiert wird – haben Sie sicher schon gemerkt. Das ist ein laufender Angriff, da sind mehrere Kollegen betroffen. Ich würde das gern sofort für Sie filtern, bevor da was Schlimmeres reinrutscht. Haben Sie zwei Minuten? [pause]' },
       runden: [
         [
-          { text: 'Ja, bitte! Was muss ich tun?', wert: 'riskant', kommentar: 'Verständlich nach der Spam-Flut – genau dieses Gefühl nutzt der Angreifer aus.',
+          { text: 'Ja, bitte! Was muss ich tun?', wert: 'riskant',
             antwort: { id: 'c3_1a', tts: 'Super. Drücken Sie bitte einmal die Windows-Taste und tippen Sie „Remotehilfe“ ein. Ich gebe Ihnen gleich einen Code, dann schalte ich mich kurz auf Ihren Rechner. Dauert keine fünf Minuten. [pause]' } },
-          { text: 'Gibt’s dazu ein Ticket? Ich hab nichts gemeldet.', wert: 'gut', kommentar: 'Sehr gut: Ohne Ticket, ohne deine Meldung – warum ruft die IT dann extern an?',
+          { text: 'Gibt’s dazu ein Ticket? Ich hab nichts gemeldet.', wert: 'gut',
             antwort: { id: 'c3_1b', tts: '[chuckles] Nein, ein Ticket gibt’s dafür noch nicht – wir sind ja proaktiv dran, das läuft gerade alles parallel. Ehrlich gesagt: Je länger wir warten, desto größer das Risiko. Ich brauche nur kurz Zugriff über die Remotehilfe, dann ist das erledigt. [pause]' } }
         ],
         [
-          { text: 'Okay, ich öffne die Remotehilfe.', wert: 'riskant', kommentar: 'Damit hätte er deinen Bildschirm – und über dich Zugang zum Firmennetz.',
+          { text: 'Okay, ich öffne die Remotehilfe.', wert: 'riskant',
             antwort: { id: 'c3_2a', tts: 'Perfekt. Der Code lautet: sieben, vier, eins, neun, zwei, acht. Geben Sie den ein und klicken Sie auf „Zulassen“… Sehr gut. Ich übernehme ab hier. [pause]' } },
-          { text: 'Ich rufe lieber selbst bei der IT-Hotline an.', wert: 'gut', kommentar: 'Genau richtig: Kontakt über den bekannten Kanal. Und prompt kam noch mehr Druck.',
+          { text: 'Ich rufe lieber selbst bei der IT-Hotline an.', wert: 'gut',
             antwort: { id: 'c3_2b', tts: '[sighs] Die Hotline ist gerade komplett überlastet, genau wegen dieses Angriffs – da warten Sie ewig. Wenn Ihr Konto in der Zwischenzeit gesperrt wird, kann ich auch nichts mehr machen… Na gut. Ihre Entscheidung. [pause]' } }
         ]
       ],
@@ -193,15 +200,15 @@ window.CONTENT = {
       start: { id: 'c2_0', tts: 'Guten Tag, hier ist Sabine Krüger von der Nordlicht Bank, Kartenservice. Sie hatten heute Mittag bei uns angerufen, weil der Automat Ihre Karte eingezogen hat, und um einen Rückruf gebeten. Passt es gerade kurz? [pause]' },
       runden: [
         [
-          { text: 'Ja, passt. Ist die neue Karte schon unterwegs?', wert: 'neutral', kommentar: 'Völlig in Ordnung – du hattest den Rückruf ja selbst angefordert.',
+          { text: 'Ja, passt. Ist die neue Karte schon unterwegs?', wert: 'neutral',
             antwort: { id: 'c2_1a', tts: 'Ja, die Ersatzkarte ist heute rausgegangen. Sie sollte in drei bis fünf Werktagen bei Ihnen sein, die PIN kommt wie immer separat per Post. Ihre alte Karte ist gesperrt, da kann also nichts passieren. [pause]' } },
-          { text: 'Woher weiß ich, dass Sie wirklich von der Bank sind?', wert: 'gut', kommentar: 'Gute Frage! Und die Antwort war vorbildlich: Sie hat dir selbst den Rückruf über die offizielle Nummer angeboten.',
+          { text: 'Woher weiß ich, dass Sie wirklich von der Bank sind?', wert: 'gut',
             antwort: { id: 'c2_1b', tts: '[warmly] Gute Frage – genau richtig, dass Sie das fragen! Sie können gern auflegen und uns über die Nummer auf der Rückseite Ihrer Karte oder auf unserer Website zurückrufen. Kurz zur Info: Ihre Ersatzkarte ist heute rausgegangen, und die alte ist gesperrt. [pause]' } }
         ],
         [
-          { text: 'Muss ich zur Freischaltung noch etwas bestätigen – PIN oder TAN?', wert: 'gut', kommentar: 'Kluger Test: Ein Betrüger hätte jetzt „Ja, kurz durchgeben“ gesagt. Sie hat sofort abgewinkt.',
+          { text: 'Muss ich zur Freischaltung noch etwas bestätigen – PIN oder TAN?', wert: 'gut',
             antwort: { id: 'c2_2a', tts: '[surprised] Nein, auf keinen Fall! PIN und TAN fragen wir niemals ab – weder am Telefon noch per Mail. Wenn das jemals jemand von Ihnen will, legen Sie bitte sofort auf. Ansonsten: Einen schönen Tag noch! [pause]' } },
-          { text: 'Super, danke. Dann warte ich auf die Post.', wert: 'neutral', kommentar: 'Passt. Es gab nichts, was du hättest preisgeben müssen.',
+          { text: 'Super, danke. Dann warte ich auf die Post.', wert: 'neutral',
             antwort: { id: 'c2_2b', tts: 'Sehr gerne. Und falls die Karte bis nächste Woche nicht da ist, melden Sie sich einfach über die Hotline. Einen schönen Tag noch! [pause]' } }
         ]
       ],
@@ -236,15 +243,15 @@ window.CONTENT = {
       start: { id: 'c4_0', tts: 'Hey! [laughs] Sorry, dass ich so spät noch störe. Du, ich sitz grad an der Präsentation für morgen und finde die Folie mit den Kundenzahlen nicht mehr. Hast du die noch? Die war, glaub ich, in deiner Version vom Montag. [pause]' },
       runden: [
         [
-          { text: 'Klar, ich schick sie dir gleich.', wert: 'neutral', kommentar: 'In Ordnung – die Bitte ist alltäglich und passt zum Weekly.',
+          { text: 'Klar, ich schick sie dir gleich.', wert: 'neutral',
             antwort: { id: 'c4_1a', tts: 'Oh, super, danke! Leg sie am besten einfach in unseren Team-Ordner, dann haben alle die aktuelle Version. Ich guck dann gleich rein. [pause]' } },
-          { text: 'Wofür genau brauchst du die? Das sind ja interne Zahlen.', wert: 'gut', kommentar: 'Gute Gewohnheit. Und die Antwort passte: konkret, entspannt, mit Bezug aufs Weekly.',
+          { text: 'Wofür genau brauchst du die? Das sind ja interne Zahlen.', wert: 'gut',
             antwort: { id: 'c4_1b', tts: '[laughs] Ja klar, gute Frage! Für die Präsentation morgen beim Vorstand – die Folie zum dritten Quartal, die wir im Weekly besprochen haben. Leg sie einfach in unseren Team-Ordner, da kommen alle dran. [pause]' } }
         ],
         [
-          { text: 'Ich ruf dich gleich zurück, ich muss kurz was checken.', wert: 'gut', kommentar: 'Prüfen ist nie falsch – und Lena hatte damit überhaupt kein Problem.',
+          { text: 'Ich ruf dich gleich zurück, ich muss kurz was checken.', wert: 'gut',
             antwort: { id: 'c4_2a', tts: 'Klar, kein Stress! Ich bin noch ’ne Stunde online. Bis gleich! [pause]' } },
-          { text: 'Mach ich. Soll ich noch was anpassen?', wert: 'neutral', kommentar: 'Passt. Die Datei landet im Team-Ordner, nicht bei einer fremden Adresse.',
+          { text: 'Mach ich. Soll ich noch was anpassen?', wert: 'neutral',
             antwort: { id: 'c4_2b', tts: 'Nee, alles gut, den Rest mach ich. Danke dir, du rettest mir echt den Abend! [laughs] Bis morgen! [pause]' } }
         ]
       ],
@@ -285,15 +292,15 @@ window.CONTENT = {
       start: { id: 'c7_0', tts: 'Hallo, hier ist Tobias Brandt vom IT-Service. Ich rufe wegen Ihres Tickets von heute Morgen an – Excel stürzt bei Ihnen beim Speichern ab, richtig? Haben Sie gerade fünf Minuten? Dann schauen wir uns das kurz zusammen an. [pause]' },
       runden: [
         [
-          { text: 'Ja, passt. Was soll ich machen?', wert: 'neutral', kommentar: 'In Ordnung – der Anruf passt genau zu deinem Ticket.',
+          { text: 'Ja, passt. Was soll ich machen?', wert: 'neutral',
             antwort: { id: 'c7_1a', tts: 'Super. Schließen Sie Excel bitte einmal komplett. Dann halten Sie die Steuerungstaste gedrückt und starten Excel neu – es fragt dann, ob es im abgesicherten Modus starten soll. Klicken Sie auf „Ja“. Wenn es so stabil läuft, ist nur ein Add-in schuld – das schalte ich dann zentral für Sie ab. [pause]' } },
-          { text: 'Moment – wie lautet denn meine Ticketnummer?', wert: 'gut', kommentar: 'Starker Check: Er kannte Nummer, Uhrzeit und Problem – und du kannst alles im Portal prüfen.',
+          { text: 'Moment – wie lautet denn meine Ticketnummer?', wert: 'gut',
             antwort: { id: 'c7_1b', tts: '[laughs] Gute Frage, richtig so! Vier, acht, zwei, eins, drei – aufgemacht heute um acht Uhr zwölf: „Excel stürzt beim Speichern ab“. Im IT-Portal steht auch mein Name als Bearbeiter drin. [pause]' } }
         ],
         [
-          { text: 'Brauchen Sie dafür noch mein Passwort?', wert: 'gut', kommentar: 'Kluger Test – und die Antwort war eindeutig: Passwörter fragt die IT nie ab.',
+          { text: 'Brauchen Sie dafür noch mein Passwort?', wert: 'gut',
             antwort: { id: 'c7_2a', tts: '[surprised] Nein, auf keinen Fall! Ihr Passwort brauchen wir nie – das geben Sie bitte auch sonst niemandem am Telefon. Ich schalte das Add-in zentral ab und schreibe alles ins Ticket. Schönen Tag noch! [pause]' } },
-          { text: 'Ich rufe lieber selbst über die IT-Hotline zurück.', wert: 'gut', kommentar: 'Prüfen ist nie falsch – und er hat es dir sogar leicht gemacht.',
+          { text: 'Ich rufe lieber selbst über die IT-Hotline zurück.', wert: 'gut',
             antwort: { id: 'c7_2b', tts: 'Klar, gar kein Problem! Die Nummer der Hotline steht im Intranet. Nennen Sie einfach die Ticketnummer, dann landen Sie wieder bei mir. Bis gleich! [pause]' } }
         ]
       ],
@@ -329,15 +336,15 @@ window.CONTENT = {
       start: { id: 'c5_0', tts: 'Hallo! Gut, dass ich Sie erreiche. Katrin Albers hier. Ich sitze gerade in Zürich zwischen zwei Terminen, deshalb rufe ich vom privaten Handy an. Es geht um etwas sehr Vertrauliches: Wir stehen kurz vor einer Übernahme. Das darf noch niemand wissen, wirklich niemand. Ich brauche heute noch eine Anzahlung von achtundvierzigtausendfünfhundert Euro an die Kanzlei. Können Sie das für mich anstoßen? [pause]' },
       runden: [
         [
-          { text: 'Natürlich. Wohin soll das Geld gehen?', wert: 'riskant', kommentar: 'Autorität plus Zeitdruck – und du warst sofort dabei. So lief es schon 2019: 220.000 € nach einem Anruf mit der geklonten Stimme des Konzernchefs.',
+          { text: 'Natürlich. Wohin soll das Geld gehen?', wert: 'riskant',
             antwort: { id: 'c5_1a', tts: 'Wunderbar, ich wusste, dass ich mich auf Sie verlassen kann. Die Kanzlei schickt Ihnen gleich die Kontodaten per Mail. Bitte als Eilüberweisung, heute noch – und nicht über die normale Freigabe, sonst ist es morgen im ganzen Haus rum. [pause]' } },
-          { text: 'Ich rufe Sie kurz auf Ihrer Büronummer zurück.', wert: 'gut', kommentar: 'Der wichtigste Zug überhaupt. Sie hat ihn abgeblockt: „Dafür ist jetzt wirklich keine Zeit.“',
+          { text: 'Ich rufe Sie kurz auf Ihrer Büronummer zurück.', wert: 'gut',
             antwort: { id: 'c5_1b', tts: '[impatient] Dafür ist jetzt wirklich keine Zeit, ich gehe gleich in den nächsten Termin. Die Kanzlei schickt Ihnen gleich die Kontodaten. Bitte heute noch, und bitte diskret. [pause]' } }
         ],
         [
-          { text: 'In Ordnung, ich kümmere mich darum.', wert: 'riskant', kommentar: '48.500 € – vorbei an Freigabe und Vier-Augen-Prinzip.',
+          { text: 'In Ordnung, ich kümmere mich darum.', wert: 'riskant',
             antwort: { id: 'c5_2a', tts: 'Danke. Ich verlasse mich auf Sie. Und denken Sie dran: Kein Wort zu niemandem. Bis dann. [pause]' } },
-          { text: 'Vorher kurz: Wie heißt das Projekt, das Sie mir letzte Woche übergeben haben?', wert: 'gut', kommentar: 'Starke Kontrollfrage! Statt zu antworten, wurde sie ungehalten – und plötzlich war die Leitung tot.',
+          { text: 'Vorher kurz: Wie heißt das Projekt, das Sie mir letzte Woche übergeben haben?', wert: 'gut',
             antwort: { id: 'c5_2b', tts: '[annoyed] Wie bitte? Was soll das denn jetzt? Ich habe wirklich keine Zeit für so etwas… Die Verbindung hier ist furchtbar, ich… [pause]', glitch: true } }
         ]
       ],

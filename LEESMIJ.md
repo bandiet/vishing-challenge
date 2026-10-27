@@ -4,9 +4,11 @@ Doorontwikkeling van `../../Vishing - Deepfake or not/MenschOderKI2` (die blijft
 
 ## Verloop
 
-Start (titel, golf Mensch→Maschine, vliegende symbolen) → intro (stemkloon-werkbank) → **Level 1** (c1 Jonas, c3 nep-helpdesk, c2 bank) → level-auswertung → **Sicherheitstipp als Vishing-nugget**: vier lessen uit de feedback van de eerste gesprekken, één per kaart, daarna de vraag "Und wenn du dir nicht sicher bist?" en de Rückruf-Regel → **Level 2** (c4 Lena, c7 echte IT-terugbelactie, c5 Chefin per WhatsApp-audio) → level-auswertung → eindauswertung.
+Start (titel, golf Mensch→Maschine, vliegende symbolen) → "Bereit für Level 1?" → intro (stemkloon-werkbank, eindigt met "Gleich klingelt dein Telefon.") → **Level 1** (c1 Jonas, c3 nep-helpdesk, c2 bank) → level-auswertung → **Sicherheitstipp als Vishing-nugget**: vier lessen uit de feedback van de eerste gesprekken, één per kaart, daarna de vraag "Und wenn du dir nicht sicher bist?" en de Rückruf-Regel → **Level 2** (c4 Lena, c7 echte IT-terugbelactie, c5 Chefin per WhatsApp-audio) → level-auswertung → eindauswertung.
 
-Gesprekscherm: links het toestel (telefoon of Teams), rechts de situatie en daaronder het gesprekspaneel. Telefoon en rechterkolom staan verticaal gecentreerd. Live-ondertitels staan standaard **uit** ("… spricht …"); de schakelaar "Live-Untertitel" in het paneel zet ze aan en uit. Oordeel ECHT (mint) / FAKE (koraal), feedback als kaart over alles heen.
+Gesprekscherm: links het toestel (telefoon of Teams), rechts de situatie en daaronder het gesprekspaneel. Telefoon en rechterkolom staan verticaal gecentreerd. Live-ondertitels staan standaard **uit** ("… spricht …"); de schakelaar "Live-Untertitel" in het paneel zet ze aan en uit. Oordeel ECHT (mint) / FAKE (koraal).
+
+Feedback staat, net als in de Phishing Challenge, in het paneel rechts (in plaats van situatie en gesprek; op smalle schermen onder het compacte telefoonkaartje). Eerst het resultaat ("Entlarvt!", "Getäuscht!", …), de algemene terugkoppeling en "Das Entscheidende". Intussen vliegt de SVG-hacker uit Opus even van links binnen met een sprechblase: blij als hij gewonnen heeft, geschrokken als hij door de mand viel, gapend bij een echt gesprek. Daarna volgen "Details anzeigen" en "Hinweise überspringen". "Details anzeigen" loopt de signalen één voor één door, met als laatste "Das schützt dich". Als de hacker buit maakt, telt de kas in de HUD mee op. Een klik op die kas haalt de hacker erbij met een zin over zijn buit (`hackerKasse` in `content.js`).
 
 ## Starten
 
@@ -16,7 +18,7 @@ Gesprekscherm: links het toestel (telefoon of Teams), rechts de situatie en daar
 
 | Bestand | Inhoud |
 |---|---|
-| `js/content.js` | alle teksten; `anrufe` in speelvolgorde, `levels` (aantal gesprekken per level), `levelIntro`, `levelEnde`, `pause` (nugget-kaarten + vraag) |
+| `js/content.js` | alle teksten; `anrufe` in speelvolgorde, `feedback` (titels en terugkoppeling in het paneel), `hackerKasse` (zinnen bij een klik op de buit), `levels` (aantal gesprekken per level), `levelIntro`, `levelEnde`, `pause` (nugget-kaarten + vraag) |
 | `js/app.js` | verloop: start, intro, levels, gesprekken, oordeel, feedback, nugget, level-auswertung, eindscherm |
 | `js/klang.js` | Web Audio (muziek, stemmen door de lijnfilters, beltonen, synth-geluiden) |
 | `js/feier.js` | confetti (overgenomen uit de Phishing Challenge) |
