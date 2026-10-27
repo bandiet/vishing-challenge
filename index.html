@@ -46,7 +46,7 @@
       <h1 id="start-titel" class="mega"></h1>
       <div class="start-visual" aria-hidden="true">
         <canvas id="start-welle" class="welle"></canvas>
-        <div class="welle-labels"><span>Mensch</span><span>Maschine</span></div>
+        <div class="welle-labels"><span>Echt</span><span>Fake</span></div>
       </div>
       <p class="lead" id="start-kern"></p>
       <div class="start-aktion"><button id="start-los" class="btn btn-gross btn-mint btn-winkt" type="button"></button></div>
@@ -179,6 +179,7 @@
       <div class="dialog" id="dialog">
         <div class="cc karte" id="cc">
           <div class="cc-kopf">
+            <span class="cc-titel">Gesprächsverlauf</span>
             <button class="cc-schalter" id="cc-schalter" type="button" role="switch" aria-checked="false"><i class="cc-punkt"></i><span>Live-Untertitel</span><span class="schalter" aria-hidden="true"></span></button>
             <button class="btn-text cc-nochmal" id="cc-nochmal" type="button" hidden>↺ Nochmal hören</button>
           </div>
@@ -194,11 +195,11 @@
           <h2 class="urteil-frage" id="urteil-frage"></h2>
           <div class="urteil-tasten">
             <button class="urteil-btn echt" id="urteil-echt" type="button">
-              <svg class="ico" viewBox="0 0 48 48"><circle cx="24" cy="16" r="8"/><path d="M8 42c1.5-9 8-14 16-14s14.5 5 16 14"/></svg>
+              <svg class="ico" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m8.6 12 2.4 2.4 4.4-4.9"/></svg>
               <b></b><span></span><kbd>←</kbd>
             </button>
             <button class="urteil-btn fake" id="urteil-fake" type="button">
-              <svg class="ico" viewBox="0 0 48 48"><rect x="10" y="12" width="28" height="24" rx="6"/><path d="M24 12V6M18 22h.01M30 22h.01M18 30h12"/><circle cx="24" cy="5" r="2"/></svg>
+              <svg class="ico" viewBox="0 0 24 24"><path d="M6.6 3.2 8.8 5c.4.3.5.9.3 1.4L8 8.8a12 12 0 0 0 7.2 7.2l2.4-1.1c.5-.2 1-.1 1.4.3l1.8 2.2c.4.5.3 1.2-.2 1.6l-1.6 1.3c-.9.7-2.1.9-3.1.5A18.4 18.4 0 0 1 3.2 8.2c-.4-1-.2-2.2.5-3.1L5 3.4c.4-.5 1.1-.6 1.6-.2z"/><path d="M17.5 2.5v4.6M17.5 10h.01"/></svg>
               <b></b><span></span><kbd>→</kbd>
             </button>
           </div>
@@ -237,7 +238,6 @@
       <p class="kicker" id="pause-kicker"></p>
       <h2 class="titel" id="pause-titel"></h2>
       <div class="nugget" id="nugget">
-        <p class="nugget-lead" id="nugget-lead"></p>
         <div class="nugget-karte" id="nugget-karte" aria-live="polite"></div>
         <div class="nugget-nav">
           <div class="nugget-punkte" id="nugget-punkte"></div>

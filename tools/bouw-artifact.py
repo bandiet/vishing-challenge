@@ -39,7 +39,7 @@ for ordner in ('sfx', 'musik'):
         if n.endswith('.mp3'):
             pfade.append(f'assets/{ordner}/{n}')
 # Profilfotos der Anrufer
-pfade += sorted(set(re.findall(r"foto: '(assets/[^']+)'", content)))
+pfade += sorted(set(re.findall(r"(?:foto|bild): '(assets/[^']+)'", content)))
 pfade += ['assets/hacker.png', 'assets/hacker-face.png', 'assets/intro-gesicht.jpg']
 pfade = list(dict.fromkeys(pfade))
 

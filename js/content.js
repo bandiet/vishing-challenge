@@ -25,7 +25,7 @@ window.CONTENT = {
     beats: [
       { art: 'audio', gross: '3 Sekunden Audio.', klein: 'Mehr braucht es nicht.', ergebnis: 'Stimme geklont' },
       { art: 'frage', gross: 'Echt oder Fake?', klein: 'Hören kannst du den Unterschied nicht mehr.' },
-      { art: 'du', gross: 'Du entscheidest.', klein: 'Sechs Anrufe. Hör genau hin. Hak nach.' },
+      { art: 'du', gross: 'Du entscheidest.', klein: 'Hör genau hin. Hak nach.' },
       { art: 'ring', gross: 'Gleich klingelt dein Telefon.' }
     ],
     foto: 'assets/intro-gesicht.jpg',
@@ -55,10 +55,10 @@ window.CONTENT = {
   },
 
   urteil: {
-    frage: 'Mensch oder KI?',
+    frage: 'Echt oder Fake?',
     sub: 'Was steckt hinter diesem Anruf?',
-    echt: { titel: 'ECHT', text: 'Ein Mensch mit echtem Anliegen' },
-    fake: { titel: 'FAKE', text: 'KI-Betrug – auflegen & prüfen' }
+    echt: { titel: 'ECHT', text: 'Ein echter Anruf mit echtem Anliegen' },
+    fake: { titel: 'FAKE', text: 'Vishing – auflegen & prüfen' }
   },
 
   /* Feedback im Panel wie in der Phishing Challenge: titel (Ergebnis), text (allgemeine Rückmeldung;
@@ -83,15 +83,19 @@ window.CONTENT = {
   },
 
   /* Klick auf die Hacker-Beute oben: der Hacker fliegt herein und sagt, was er von seiner Kasse hält.
-     leer = 0 €, klein = bis 1.000 €, mittel = bis 100.000 €, gross = darüber; {beute} = der Stand. */
+     vorStart = noch kein Anruf beendet, leer = 0 €, klein = bis 1.000 €, mittel = bis 100.000 €, gross = darüber; {beute} = der Stand. */
   hackerKasse: {
+    vorStart: ['Ich hab noch gar nicht angefangen – wart’s ab! 😏', 'Geduld … mein erster Anruf kommt gleich. 📞', 'Noch leer. Aber nicht mehr lange! 😈'],
     leer: ['Leer. Komplett leer. 😤', 'Null Euro. Ich sollte umschulen …', 'In meiner Kasse liegt nur Staub. 🕸️', 'Hör auf zu klicken – da ist nichts drin! 😒'],
     klein: ['{beute}? Das reicht gerade für Pizza. 🍕', 'Kleingeld. Aber ich bin geduldig … 😏', 'Immerhin. Der Anfang ist gemacht. 💰'],
     mittel: ['{beute}! Das neue Gaming-Setup ist gesichert. 😎', 'Läuft bei mir! 💸', '{beute} – nicht schlecht für ein paar Anrufe. 😈'],
     gross: ['{beute}! Ich schau mir schon mal Jachten an. 🛥️', 'Danke! Mein Ruhestand rückt näher. 🏝️', 'Ich liebe Telefonieren! 🤑']
   },
 
-  /* ---------------- die sechs Anrufe (Reihenfolge = Spielreihenfolge; Level siehe unten) ---------------- */
+  /* ---------------- die sechs Anrufe (Reihenfolge = Spielreihenfolge; Level siehe unten) ----------------
+     signale: nach Wichtigkeit sortiert. Im Feedback erscheinen die ersten drei, die zum Gesprächsverlauf passen
+     (wenn = nur nach dieser Antwort, wennNicht = nur ohne sie), danach „Das schützt dich“ (tipp).
+     zitat: Stelle(n) im Gespräch, die beim Hinweis im Transkript aufleuchten – exakt wie im Untertitel. */
   anrufe: [
     {
       id: 'c1',
@@ -122,12 +126,11 @@ window.CONTENT = {
         ]
       ],
       signale: [
-        { art: 'rot', titel: 'Unbekannte Nummer, „Handy weg“', text: 'Der klassische Einstieg beim Schockanruf: So erklärt der Betrüger, warum er nicht von Jonas’ Nummer anruft.' },
-        { art: 'rot', titel: 'Angst und extremer Zeitdruck', text: '„Jetzt gleich“, „sonst nehmen die mich mit“ – Panik soll verhindern, dass du nachdenkst.' },
-        { art: 'rot', titel: 'Geld per Echtzeitüberweisung', text: 'Keine Polizei der Welt kassiert Kaution per Überweisung an ein Konto, das dir am Telefon genannt wird. Echtzeitüberweisungen lassen sich kaum zurückholen.' },
-        { art: 'rot', titel: 'Weicht der Kontrollfrage aus', text: 'Statt zu antworten, macht er mehr Druck. Echte Angehörige kennen Omas Katze.', wenn: 'c1_1b' },
-        { art: 'rot', titel: '„Sag Mama nichts“', text: 'Geheimhaltung isoliert dich – niemand soll dir raten, erst einmal nachzuprüfen.', wenn: 'c1_2a' },
-        { art: 'rot', titel: 'Kein Rückruf erlaubt', text: 'Wer wirklich in Not ist, hat nichts gegen einen Rückruf über einen bekannten Weg – oder über seine Freunde vor Ort.', wenn: 'c1_2b' },
+        { art: 'rot', titel: 'Unbekannte Nummer, „Handy weg“', zitat: 'Mein Handy ist weg', text: 'Der klassische Einstieg beim Schockanruf: So erklärt der Betrüger, warum er nicht von Jonas’ Nummer anruft.' },
+        { art: 'rot', titel: 'Panik – und Geld sofort', zitat: ['sonst nehmen die mich mit', 'achthundert Euro Kaution', 'Echtzeitüberweisung'], text: '„Jetzt gleich“, „sonst nehmen die mich mit“ – Panik soll verhindern, dass du nachdenkst. Und keine Polizei kassiert Kaution per Überweisung auf ein Konto, das dir am Telefon genannt wird.' },
+        { art: 'rot', titel: 'Kein Rückruf erlaubt', zitat: 'da erreichst du mich nicht', text: 'Wer wirklich in Not ist, hat nichts gegen einen Rückruf über einen bekannten Weg – oder über seine Freunde vor Ort.', wenn: 'c1_2b' },
+        { art: 'rot', titel: 'Weicht der Kontrollfrage aus', zitat: 'du willst ein Quiz machen', text: 'Statt zu antworten, macht er mehr Druck. Echte Angehörige kennen Omas Katze.', wenn: 'c1_1b' },
+        { art: 'rot', titel: '„Sag Mama nichts“', zitat: 'sag Mama nichts', text: 'Geheimhaltung isoliert dich – niemand soll dir raten, erst einmal nachzuprüfen.', wenn: 'c1_2a' },
         { art: 'info', titel: 'Die Stimme klang echt', text: 'Jonas’ Strandvideos liefern genug Material für einen Stimmklon. Auch die verdächtige Stille im Hintergrund – angeblich mitten im Unfallchaos – ist nur ein schwacher Hinweis. Verlass dich nicht auf dein Ohr.' }
       ],
       kern: 'Unbekannte Nummer, Panik, Geld sofort – und ein Rückruf ist „nicht möglich“. Das ist das Muster des Schockanrufs, egal wie echt die Stimme klingt.',
@@ -149,7 +152,7 @@ window.CONTENT = {
       klingel: 'teams',
       zeit: 'Montag, 9:40',
       storyTitel: 'Was ist mit meinem Postfach los?',
-      lage: 'Seit 9 Uhr fluten Hunderte Spam-Mails dein Postfach. Du kommst kaum hinterher. Da klingelt Teams: der „IT-Helpdesk“.',
+      lage: 'Plötzlich fluten Spam-Mails dein Postfach – Dutzende pro Minute. Du kommst kaum hinterher. Da klingelt Teams: der „IT-Helpdesk“.',
       anrufer: { name: 'IT-Helpdesk Support', zeile: 'it-helpdesk-support.onmicrosoft.com', initialen: 'IT', farbe: '#4A55C9', badge: 'Extern' },
       start: { id: 'c3_0', tts: 'Hallo, hier ist Marcel vom IT-Helpdesk. Wir sehen gerade, dass Ihr Postfach mit Spam regelrecht bombardiert wird – haben Sie sicher schon gemerkt. Das ist ein laufender Angriff, da sind mehrere Kollegen betroffen. Ich würde das gern sofort für Sie filtern, bevor da was Schlimmeres reinrutscht. Haben Sie zwei Minuten? [pause]' },
       runden: [
@@ -167,13 +170,11 @@ window.CONTENT = {
         ]
       ],
       signale: [
-        { art: 'rot', titel: '„Extern“ im Teams-Anruf', text: 'Deine IT ruft aus dem eigenen Unternehmen an – nicht von einem fremden Konto wie „…onmicrosoft.com“.' },
-        { art: 'rot', titel: 'Verdächtig gutes Timing', text: 'Die Spam-Flut war kein Zufall: Angreifer lösen sie selbst aus, um danach als „Retter“ anzurufen. Diese Masche läuft 2026 gezielt gegen Unternehmen.' },
-        { art: 'rot', titel: 'Fernzugriff über die Remotehilfe', text: 'Wer auf deinen Bildschirm darf, sieht und steuert alles – Passwörter, Daten, Netzwerk. In echten Fällen lag zwischen so einem Anruf und verschlüsselten Servern weniger als ein Tag.' },
-        { art: 'rot', titel: 'Kein Ticket, aber Druck', text: '„Je länger wir warten …“, „Hotline überlastet“, „Konto gesperrt“ – Zeitdruck statt Prozess.', wenn: 'c3_1b' },
-        { art: 'rot', titel: 'Rückruf wird schlechtgeredet', text: 'Echter Support hat kein Problem damit, dass du die offizielle Hotline wählst.', wenn: 'c3_2b' },
-        { art: 'info', titel: 'Keine Warnung heißt nichts', text: 'Seit 2026 warnt Teams bei manchen verdächtigen Erstanrufen von außen. Fehlt die Warnung, ist der Anruf trotzdem nicht geprüft – achte selbst auf „Extern“.' },
-        { art: 'info', titel: 'Freundlich, kompetent, geduldig', text: 'KI-Sprachagenten führen solche Gespräche heute automatisiert – tausendfach parallel und ohne genervt zu klingen.' }
+        { art: 'rot', titel: '„Extern“ im Teams-Anruf', text: 'Deine IT ruft aus dem eigenen Unternehmen an – nicht von einem fremden Konto wie „…onmicrosoft.com“. Seit 2026 warnt Teams manchmal bei solchen Anrufen; fehlt die Warnung, ist der Anruf trotzdem nicht geprüft.' },
+        { art: 'rot', titel: 'Erst Spam, dann der „Retter“', zitat: 'mit Spam regelrecht bombardiert', text: 'Die Spam-Flut war kein Zufall: Angreifer lösen sie selbst aus, um danach als Helfer anzurufen. Diese Masche läuft 2026 gezielt gegen Unternehmen.' },
+        { art: 'rot', titel: 'Rückruf wird schlechtgeredet', zitat: 'Die Hotline ist gerade komplett überlastet', text: 'Echter Support hat kein Problem damit, dass du die offizielle Hotline wählst. „Hotline überlastet“ und „Konto gesperrt“ sollen dich davon abhalten.', wenn: 'c3_2b' },
+        { art: 'rot', titel: 'Kein Ticket, aber Druck', zitat: 'Je länger wir warten, desto größer das Risiko', text: 'Ein Ticket gibt es nicht – dafür Zeitdruck statt Prozess.', wenn: 'c3_1b' },
+        { art: 'rot', titel: 'Fernzugriff über die Remotehilfe', zitat: ['schalte ich mich kurz auf Ihren Rechner', 'Zugriff über die Remotehilfe'], text: 'Wer auf deinen Bildschirm darf, sieht und steuert alles – Passwörter, Daten, Netzwerk. In echten Fällen lag zwischen so einem Anruf und verschlüsselten Servern weniger als ein Tag.' }
       ],
       kern: 'Deine IT ruft nicht von außen an, um dir ungefragt Fernzugriff abzuschwatzen – erst recht nicht direkt nach einer Spam-Flut, die sie angeblich „filtern“ will.',
       tipp: 'Fernzugriff nur, wenn DU ein Ticket eröffnet hast und der Kontakt über den bekannten IT-Kanal läuft. Im Zweifel: auflegen und die IT über die Nummer im Intranet anrufen.',
@@ -213,12 +214,11 @@ window.CONTENT = {
         ]
       ],
       signale: [
-        { art: 'gruen', titel: 'Du hast den Rückruf angefordert', text: 'Anlass und Zeitpunkt passen genau zu dem, was du selbst ausgelöst hast.' },
-        { art: 'gruen', titel: 'Sie verlangt nichts', text: 'Keine PIN, keine TAN, keine Freigabe in der App, kein Geld. Sie gibt nur Informationen.' },
-        { art: 'gruen', titel: 'Rückruf ausdrücklich erwünscht', text: 'Sie bietet von sich aus an, dass du über die offizielle Nummer zurückrufst.', wenn: 'c2_1b' },
-        { art: 'gruen', titel: 'PIN und TAN tabu', text: 'Auf deine Frage kam sofort: niemals am Telefon. Ein Betrüger hätte zugegriffen.', wenn: 'c2_2a' },
-        { art: 'gruen', titel: 'Kein Druck', text: 'Ruhiger Ton, keine Drohung, kein „sofort“. Die Geräusche im Hintergrund passen zum Kartenservice.' },
-        { art: 'info', titel: 'Fremde Nummer, alte Warnung', text: 'Callcenter rufen oft von Sammelnummern an, und Warnungen kommen ständig. Beides beweist nichts – weder für noch gegen den Anruf. Umgekehrt lässt sich auch eine bekannte Nummer fälschen (Call-ID-Spoofing).' }
+        { art: 'gruen', titel: 'Du hast den Rückruf angefordert', zitat: 'um einen Rückruf gebeten', text: 'Anlass und Zeitpunkt passen genau zu dem, was du selbst ausgelöst hast.' },
+        { art: 'gruen', titel: 'PIN und TAN tabu', zitat: 'PIN und TAN fragen wir niemals ab', text: 'Auf deine Frage kam sofort: niemals am Telefon. Ein Betrüger hätte zugegriffen.', wenn: 'c2_2a' },
+        { art: 'gruen', titel: 'Rückruf ausdrücklich erwünscht', zitat: 'über die Nummer auf der Rückseite Ihrer Karte', text: 'Sie bietet von sich aus an, dass du über die offizielle Nummer zurückrufst.', wenn: 'c2_1b' },
+        { art: 'gruen', titel: 'Sie verlangt nichts', zitat: 'die PIN kommt wie immer separat per Post', text: 'Keine PIN, keine TAN, keine Freigabe in der App, kein Geld, kein „sofort“. Sie gibt nur Informationen – in ruhigem Ton.' },
+        { art: 'info', titel: 'Die Nummer beweist nichts', text: 'Callcenter rufen oft von Sammelnummern an – eine fremde Nummer macht noch keinen Fake. Umgekehrt lässt sich auch eine bekannte Nummer fälschen (Call-ID-Spoofing).' }
       ],
       kern: 'Du hast den Rückruf selbst angefordert – und sie wollte nichts von dir. Eine fremde Nummer allein macht noch keinen Fake.',
       tipp: 'Echte Bankmitarbeitende fragen nie nach PIN, TAN oder Freigaben in der App. Im Zweifel: auflegen und die Nummer von der Kartenrückseite wählen.',
@@ -257,11 +257,9 @@ window.CONTENT = {
       ],
       signale: [
         { art: 'gruen', titel: 'Interner Kontakt', text: 'Kein „Extern“-Hinweis, bekannter Name, bekanntes Profil im Firmen-Teams.' },
-        { art: 'gruen', titel: 'Der Anlass passt', text: 'Ihr habt im Weekly darüber gesprochen, die Präsentation ist morgen.' },
-        { art: 'gruen', titel: 'Der normale Weg', text: 'Sie will die Datei im gemeinsamen Team-Ordner – nicht an eine private Mailadresse.' },
-        { art: 'gruen', titel: 'Kein Druck, keine Geheimnisse', text: 'Nachfragen und Rückruf sind für sie völlig okay.', wenn: 'c4_2a' },
-        { art: 'gruen', titel: 'Kein Druck, keine Geheimnisse', text: 'Keine Eile, kein „sag niemandem was“. Sie geht entspannt auf dich ein.', wennNicht: 'c4_2a' },
-        { art: 'info', titel: 'Lachen ist kein Beweis', text: 'Auch KI-Stimmen lachen und sagen „äh“. Entscheidend ist, dass die Bitte plausibel und harmlos ist.' }
+        { art: 'gruen', titel: 'Der normale Weg', zitat: 'in unseren Team-Ordner', text: 'Sie will die Datei im gemeinsamen Team-Ordner – nicht an eine private Mailadresse.' },
+        { art: 'gruen', titel: 'Kein Druck, keine Geheimnisse', zitat: 'kein Stress', text: 'Nachfragen und Rückruf sind für sie völlig okay.', wenn: 'c4_2a' },
+        { art: 'gruen', titel: 'Der Anlass passt', zitat: ['Präsentation für morgen', 'im Weekly besprochen'], text: 'Ihr habt im Weekly darüber gesprochen, die Präsentation ist morgen. Keine Eile, kein „sag niemandem was“.' }
       ],
       kern: 'Interner Kontakt, bekannter Anlass, der normale Weg über den Team-Ordner – und Nachfragen waren kein Problem.',
       tipp: 'Auch bei Kolleginnen und Kollegen gilt: Wird es ungewöhnlich – Geld, Passwörter, vertrauliche Daten an fremde Adressen –, dann prüfen. Hier war es das nicht.',
@@ -305,13 +303,12 @@ window.CONTENT = {
         ]
       ],
       signale: [
-        { art: 'gruen', titel: 'Dein eigenes Ticket', text: 'Anlass und Zeitpunkt passen genau zu dem Problem, das du heute Morgen selbst gemeldet hast.' },
-        { art: 'gruen', titel: 'Interner Kontakt', text: 'Kein „Extern“-Hinweis: Er ruft aus dem Firmen-Teams an, mit Namen und Abteilung.' },
-        { art: 'gruen', titel: 'Du machst es selbst', text: 'Keine Remotehilfe, kein Code: Du startest Excel selbst neu, er erklärt nur.', wenn: 'c7_1a' },
-        { art: 'gruen', titel: 'Ticketnummer stimmt', text: 'Er nennt Nummer, Uhrzeit und Problem – und verweist aufs Portal, wo du alles selbst prüfen kannst.', wenn: 'c7_1b' },
-        { art: 'gruen', titel: 'Passwort tabu', text: 'Auf deine Frage kam sofort: niemals. Ein Betrüger hätte zugegriffen.', wenn: 'c7_2a' },
-        { art: 'gruen', titel: 'Rückruf erwünscht', text: 'Er verweist auf die Hotline aus dem Intranet – nicht auf eine Nummer, die er dir selbst nennt.', wenn: 'c7_2b' },
-        { art: 'info', titel: 'Gleicher Kanal wie der Fake', text: 'Auch der falsche Helpdesk rief über Teams an. Den Unterschied machen „Extern“, dein eigenes Ticket – und ob du selbst nachprüfen darfst.' }
+        { art: 'gruen', titel: 'Dein eigenes Ticket', zitat: 'wegen Ihres Tickets von heute Morgen', text: 'Anlass und Zeitpunkt passen genau zu dem Problem, das du heute Morgen selbst gemeldet hast.' },
+        { art: 'gruen', titel: 'Gleicher Kanal – aber intern', text: 'Auch der falsche Helpdesk rief über Teams an. Hier fehlt das „Extern“: Er ruft aus dem Firmen-Teams an, mit Namen und Abteilung.' },
+        { art: 'gruen', titel: 'Passwort tabu', zitat: 'Ihr Passwort brauchen wir nie', text: 'Auf deine Frage kam sofort: niemals. Ein Betrüger hätte zugegriffen.', wenn: 'c7_2a' },
+        { art: 'gruen', titel: 'Rückruf erwünscht', zitat: 'Die Nummer der Hotline steht im Intranet', text: 'Er verweist auf die Hotline aus dem Intranet – nicht auf eine Nummer, die er dir selbst nennt.', wenn: 'c7_2b' },
+        { art: 'gruen', titel: 'Ticketnummer stimmt', zitat: 'Im IT-Portal steht auch mein Name', text: 'Er nennt Nummer, Uhrzeit und Problem – und verweist aufs Portal, wo du alles selbst prüfen kannst.', wenn: 'c7_1b' },
+        { art: 'gruen', titel: 'Du machst es selbst', zitat: 'starten Excel neu', text: 'Keine Remotehilfe, kein Code: Du startest Excel selbst neu, er erklärt nur.', wenn: 'c7_1a' }
       ],
       kern: 'Dein eigenes Ticket, ein interner Kontakt, kein Passwort, kein Fernzugriff – und Nachprüfen ausdrücklich erwünscht. So klingt echter IT-Support.',
       tipp: 'Echte IT fragt nie nach deinem Passwort oder einem MFA-Code. Ruft sie an: Ticketnummer nennen lassen und im Portal prüfen – oder selbst über die Hotline aus dem Intranet zurückrufen.',
@@ -349,11 +346,10 @@ window.CONTENT = {
         ]
       ],
       signale: [
-        { art: 'rot', titel: 'Fremde Nummer, vertraute Stimme', text: 'Ein Profilfoto kann jeder hochladen. Und Townhall-Videos liefern genug Material für einen Stimmklon.' },
-        { art: 'rot', titel: 'Geheimhaltung', text: '„Das darf niemand wissen“, „nicht über die normale Freigabe“ – damit soll niemand gegenprüfen.' },
-        { art: 'rot', titel: 'Zeitdruck und Autorität', text: 'Die Chefin persönlich, „heute noch“, „Eilüberweisung“. Wer widerspricht da schon?' },
-        { art: 'rot', titel: 'Rückruf abgeblockt', text: 'Ein Rückruf über die Büronummer dauert eine Minute. Wer ihn mit Zeitdruck abblockt, will genau diese Prüfung verhindern.', wenn: 'c5_1b' },
-        { art: 'rot', titel: 'Kontrollfrage? Leitung tot.', text: 'Statt einer Antwort kam Ärger – und dann brach die Verbindung ab. Wer eine einfache Frage zum gemeinsamen Alltag nicht beantworten kann, ist nicht die, die sie vorgibt zu sein.', wenn: 'c5_2b' },
+        { art: 'rot', titel: 'Fremde Nummer, vertraute Stimme', zitat: 'vom privaten Handy', text: 'Ein Profilfoto kann jeder hochladen. Und Townhall-Videos liefern genug Material für einen Stimmklon.' },
+        { art: 'rot', titel: 'Geheim, eilig, am Prozess vorbei', zitat: ['Das darf noch niemand wissen', 'nicht über die normale Freigabe', 'Eilüberweisung'], text: '„Das darf niemand wissen“, „heute noch“, „nicht über die normale Freigabe“ – die Chefin persönlich macht Druck, damit niemand gegenprüft.' },
+        { art: 'rot', titel: 'Kontrollfrage? Leitung tot.', zitat: 'Was soll das denn jetzt', text: 'Statt einer Antwort kam Ärger – und dann brach die Verbindung ab. Wer eine einfache Frage zum gemeinsamen Alltag nicht beantworten kann, ist nicht die, die sie vorgibt zu sein.', wenn: 'c5_2b' },
+        { art: 'rot', titel: 'Rückruf abgeblockt', zitat: 'Dafür ist jetzt wirklich keine Zeit', text: 'Ein Rückruf über die Büronummer dauert eine Minute. Wer ihn mit Zeitdruck abblockt, will genau diese Prüfung verhindern.', wenn: 'c5_1b' },
         { art: 'info', titel: 'Die Stimme ist KI', text: 'Diese Chefin gibt es nicht: Die Stimme ist komplett KI-erzeugt. Für einen echten Klon reichen ein paar Minuten aus einem Townhall-Video.' }
       ],
       kern: 'Geheim, eilig, am Prozess vorbei – und der Rückruf wird abgeblockt. Auch eine vertraute Stimme beweist nichts.',
@@ -366,7 +362,7 @@ window.CONTENT = {
 
   /* ---------------- Levels ----------------
      anzahl = so viele Anrufe aus der Liste oben, der Reihe nach.
-     Nach Level 1 kommt der Sicherheitstipp (unten). */
+     Nach Level 1 kommt der Sicherheitstipp, nach dem letzten Level „Zum Schluss“ (unten). */
   levels: [
     { anzahl: 3, kicker: 'Hör genau hin – und hak nach.' },
     { anzahl: 3, kicker: 'Anrufe im Job – wem kannst du trauen?' }
@@ -390,34 +386,49 @@ window.CONTENT = {
     warEcht: 'Echt',
     zumTipp: 'Weiter zum Sicherheitstipp',
     naechstesLevel: 'Weiter zu Level {n}',
+    zumSchluss: 'Weiter zum Abschluss',
     zumErgebnis: 'Zur Auswertung'
   },
 
-  /* ---------------- Sicherheitstipp nach Level 1: kleines Vishing-Nugget ----------------
-     Erst die Lehren aus den Feedbacks der ersten Anrufe (karten, eine nach der anderen),
-     dann die Frage mit den vier Optionen und die Rückruf-Regel. Der letzte Knopf kommt aus levelEnde. */
+  /* ---------------- Sicherheitstipp nach Level 1: Vishing-Nugget ----------------
+     Drei Lehren aus den ersten Anrufen, eine Karte nach der anderen (Bild rechts, schmal oben).
+     einleitung steht nur auf der ersten Karte; liste = das Muster als Beispiele. */
   pause: {
     kicker: 'Sicherheitstipp · Vishing',
-    titel: 'Vishing: Betrug am Telefon',
-    lead: 'Vishing heißt Voice-Phishing: Betrüger rufen an, statt zu mailen – immer öfter mit KI-Stimmen. Das sind die wichtigsten Lehren aus deinen ersten Anrufen.',
+    titel: 'Vishing erkennen',
     karten: [
-      { icon: 'welle', farbe: '#FF2D87', titel: 'Die Stimme ist kein Beweis',
-        text: 'Ein paar Sekunden Audio – etwa aus Videos in sozialen Netzwerken – reichen für einen Stimmklon. Ob ein Anruf echt ist, kannst du nicht hören.',
-        beispiel: 'Jonas klang wie Jonas – und war doch eine KI.' },
-      { icon: 'display', farbe: '#2BB8E8', titel: 'Die Nummer ist kein Beweis',
-        text: 'Angezeigte Nummern lassen sich fälschen. Und umgekehrt: Eine fremde Nummer allein macht noch keinen Fake.',
+      { bild: 'assets/nugget-stimme.webp', farbe: '#FF2D87', titel: 'Die Stimme ist kein Beweis',
+        einleitung: 'Vishing heißt Voice-Phishing: Betrüger rufen an, statt zu mailen – immer öfter mit KI-Stimmen. Das sind die wichtigsten Lehren aus deinen ersten Anrufen.',
+        text: 'Die Stimme eines echten Menschen lässt sich leicht klonen: Ein kurzes Video aus den sozialen Netzwerken reicht, und eine KI spricht mit genau dieser Stimme – samt Tonfall, Lachen und Dialekt. Ob ein Anruf echt ist, kannst du deshalb nicht hören.',
+        beispiel: 'Jonas klang wie Jonas – seine Strandvideos auf Instagram reichten für den Klon.' },
+      { bild: 'assets/nugget-nummer.webp', farbe: '#2BB8E8', titel: 'Auch Nummern lassen sich fälschen',
+        text: 'Nummer und Name im Display können gefälscht sein (Call-ID-Spoofing) – auch die deiner Bank oder deiner Firma. Und umgekehrt: Eine fremde Nummer allein macht noch keinen Fake.',
         beispiel: 'Die Bank rief von einer fremden Nummer an – und war echt.' },
-      { icon: 'warnung', farbe: '#FFC24D', titel: 'Erkenne das Muster',
-        text: 'Zeitdruck, Angst oder Geheimhaltung plus eine ungewöhnliche Bitte: Geld, PIN oder TAN, Passwörter, Fernzugriff. Das gilt auch, wenn scheinbar Kollegen oder die Chefin anrufen.',
-        beispiel: 'Der „IT-Helpdesk“ wollte ohne Ticket auf deinen Rechner.' },
-      { icon: 'frage', farbe: '#17FFC0', titel: 'Hak nach – und prüf den Weg',
-        text: 'Kontrollfrage, Ticketnummer, der normale Prozess: Echte Anrufer gehen darauf ein. Betrüger weichen aus, machen Druck – oder rufen von außen an, wo intern üblich wäre.',
-        beispiel: '„Extern“ im Teams-Anruf? Deine IT sitzt im eigenen Haus.' }
+      { bild: 'assets/nugget-muster.webp', farbe: '#FFC24D', titel: 'Erkenne das Muster',
+        text: 'Fast jeder Vishing-Anruf folgt demselben Muster – egal ob scheinbar Familie, die IT oder die Chefin anruft:',
+        liste: [
+          { titel: 'Zeitdruck', beispiel: '„Bitte, jetzt gleich!“' },
+          { titel: 'Angst oder Autorität', beispiel: '„Die Polizei ist hier …“' },
+          { titel: 'Geheimhaltung', beispiel: '„Bitte sag Mama nichts.“' },
+          { titel: 'Eine ungewöhnliche Bitte', beispiel: 'Geld, PIN oder TAN, Passwörter – oder Fernzugriff auf deinen Rechner' }
+        ] }
     ],
     lehre: 'Lehre {n} von {gesamt}',
     beispiel: 'Aus deinen Anrufen',
     weiter: 'Weiter',
-    zurueck: 'Zurück',
+    zurueck: 'Zurück'
+  },
+
+  /* ---------------- Zum Schluss nach Level 2: der letzte Tipp, dann die Frage ----------------
+     Danach die Rückruf-Regel und die Auswertung. */
+  schluss: {
+    kicker: 'Zum Schluss',
+    titel: 'Der wichtigste Tipp',
+    karten: [
+      { bild: 'assets/nugget-rueckruf.webp', farbe: '#17FFC0', titel: 'Hak nach – und prüf den Weg',
+        text: 'Kontrollfrage, Ticketnummer, der normale Prozess: Echte Anrufer gehen darauf ein. Betrüger weichen aus, machen Druck – oder rufen von außen an, wo intern üblich wäre. Am sichersten: auflegen und selbst zurückrufen, über eine Nummer, die du kennst.',
+        beispiel: '„Extern“ im Teams-Anruf? Deine IT sitzt im eigenen Haus.' }
+    ],
     zurFrage: 'Und jetzt du',
     frageTitel: 'Und wenn du dir nicht sicher bist?',
     szene: 'Dein Telefon klingelt. Die Stimme klingt genau wie deine Chefin. Sie bittet dich um etwas Ungewöhnliches – und es eilt. Irgendetwas fühlt sich komisch an.',

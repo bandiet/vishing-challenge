@@ -2,13 +2,13 @@
    Vishing Challenge — im Format der Phishing Challenge 2.0
    Start (Titel, Welle, fliegende Symbole) → „Bereit für Level 1?“ → Intro
    ohne Stimme (Stimmklon-Werkbank) → Level 1 (3 Anrufe) → Level-Auswertung
-   → Sicherheitstipp (Vishing-Nugget, Frage am Ende) → Level 2 (3 Anrufe)
-   → Level-Auswertung → Auswertung. Punkte = die Beute des Hackers (je weniger, desto besser);
+   → Sicherheitstipp (Vishing-Nugget, drei Lehren) → Level 2 (3 Anrufe) → Level-Auswertung
+   → Zum Schluss (letzter Tipp, Frage, Rückruf-Regel) → Auswertung. Punkte = die Beute des Hackers (je weniger, desto besser);
    ein Klick auf die Beute oben holt den Hacker herein.
    Jeder Anruf: Lage → Stille → Klingeln → Gespräch (zwei
    Wahlrunden) → Urteil im Panel → Feedback im Panel wie in der Phishing Challenge
    (Ergebnis + das Entscheidende, dann auf Wunsch die Signale einzeln, zum Schluss „Das schützt dich“).
-   Sprünge zum Testen: #intro, #l1, #l2, #anruf1 … #anruf6, #e1, #e2, #pause, #frage, #ende
+   Sprünge zum Testen: #intro, #l1, #l2, #anruf1 … #anruf6, #e1, #e2, #pause, #schluss, #frage, #ende
    ------------------------------------------------------------ */
 (function () {
   const C = window.CONTENT;
@@ -388,9 +388,10 @@
   }
   // Klick auf die Beute: der Hacker fliegt herein und sagt, was er von seiner Kasse hält
   $('hud-beute').addEventListener('click', () => {
-    const b = S.beute, stufe = !b ? 'leer' : b <= 1000 ? 'klein' : b <= 100000 ? 'mittel' : 'gross';
+    const b = S.beute, gestartet = S.ergebnisse.some(Boolean);
+    const stufe = !gestartet ? 'vorStart' : !b ? 'leer' : b <= 1000 ? 'klein' : b <= 100000 ? 'mittel' : 'gross';
     K.fx.klick();
-    hacker.zeige({ leer: 'aergert', klein: 'gaehnt', mittel: 'freut', gross: 'freut' }[stufe], f(ausBeutel('kasse-' + stufe, C.hackerKasse[stufe]), { beute: euro(b) }));
+    hacker.zeige({ vorStart: 'freut', leer: 'aergert', klein: 'gaehnt', mittel: 'freut', gross: 'freut' }[stufe], f(ausBeutel('kasse-' + stufe, C.hackerKasse[stufe]), { beute: euro(b) }));
   });
   // Live-Untertitel: standardmäßig aus, der Schalter im Panel blendet sie ein und aus
   function untertitelSetzen(an) {
@@ -400,6 +401,7 @@
   $('cc-schalter').addEventListener('click', () => { untertitelSetzen(!S.cc); K.fx.klick(); });
   $('btn-ton').addEventListener('click', () => {
     K.setAn(!K.an); $('btn-ton').setAttribute('aria-pressed', K.an);
+    if (!K.an) untertitelSetzen(true);   // ohne Ton geht es nur mit Untertiteln
   });
 
   /* ================= Anruf ================= */
@@ -421,7 +423,7 @@
     S.i = i; S.level = levelVon(i);
     const a = C.anrufe[i];
     S.a = a;
-    S.lauf = { pfad: [], zuege: [], runde: 0, aufgelegt: false, beendet: false };
+    S.lauf = { pfad: [], zuege: [], runde: 0, aufgelegt: false, beendet: false, verlauf: [] };
     if (app.dataset.screen !== 's-spiel') zeige('s-spiel');
     hudAktualisieren();
     $('urteil').hidden = true; $('feedback').hidden = true; delete $('s-spiel').dataset.phase;
@@ -482,6 +484,7 @@
     ['IT-Service', 'Wartungsfenster am Samstag']
   ];
   // Die Liste liegt unter allem anderen und nimmt keine Klicks an; neue Zeilen kommen ruhig, nicht im Takt der Bildwiederholung.
+  // Beim falschen Helpdesk (c3) ist das Postfach anfangs leer und läuft dann langsam voll, bis kein Platz mehr ist.
   function posteingang(a) {
     clearInterval(posteingang.id);
     const el = $('win-mails'), neuEl = $('win-mails-neu'), liste = $('win-mail-liste');
@@ -489,17 +492,16 @@
       const li = document.createElement('li'); if (neu) li.className = 'neu';
       li.innerHTML = `<b>${esc(von)}</b><span>${esc(betreff)}</span>`;
       liste.prepend(li);
-      while (liste.children.length > 6) liste.lastChild.remove();
+      while (liste.children.length > 40) liste.lastChild.remove();   // was nicht mehr hineinpasst, schneidet die Liste ab
     };
     liste.innerHTML = ''; neuEl.textContent = '';
     if (a.id === 'c3') {
-      let n = 214, neu = 0; el.textContent = n;
-      for (let i = 0; i < 6; i++) zeile(SPAM[i % SPAM.length]);
+      let n = 0, k = 0; el.textContent = n;
       posteingang.id = setInterval(() => {
-        const plus = 2 + Math.floor(Math.random() * 4);
-        n += plus; neu += plus; el.textContent = n; neuEl.textContent = '+' + neu + ' neu';
-        zeile(SPAM[Math.floor(Math.random() * SPAM.length)], true);
-      }, 750);
+        n += 1 + Math.floor(Math.random() * 3);
+        el.textContent = n; neuEl.textContent = '+' + n + ' neu';
+        zeile(SPAM[k++ % SPAM.length], true);
+      }, 650);
     } else {
       const mails = a.posteingang || NORMAL;
       el.textContent = String(mails.length);
@@ -550,10 +552,42 @@
   $('ph-auflegen').addEventListener('click', () => beenden('aufgelegt'));
   $('win-auflegen').addEventListener('click', () => beenden('aufgelegt'));
 
+  /* ---------- Transkript: links neben dem Gerät (wie die Live-Untertitel des Telefons bzw. von Teams) ----------
+     Es bleibt beim Feedback stehen; die Hinweise markieren dort ihre Stelle im Gespräch. */
+  function transkriptLinks(links) {
+    const cc = $('cc'), spalte = geraet.parentElement;
+    if (links) geraet.after(cc); else $('dialog').prepend(cc);
+    spalte.classList.toggle('mit-transkript', links);
+  }
+  transkriptLinks(true);
+
+  // Feedback: der ganze Gesprächsverlauf, die Stellen zu den Hinweisen markiert (wie das Spotlight in der Phishing Challenge)
+  function transkriptZeigen(liste) {
+    const log = $('cc-log');
+    log.innerHTML = S.lauf.verlauf.map(z => {
+      let html = esc(z.text);
+      liste.forEach((h, k) => [].concat(h.zitat || []).forEach(q => {
+        const such = esc(q), i = html.toLowerCase().indexOf(such.toLowerCase());
+        if (i >= 0) html = html.slice(0, i) + `<mark class="cc-mark m-${h.art}" data-h="${k}">${html.slice(i, i + such.length)}</mark>` + html.slice(i + such.length);
+      }));
+      return `<div class="cc-zeile cc-${z.art}"><span class="cc-wer">${esc(z.wer)}</span><p>${html}</p></div>`;
+    }).join('') || '<p class="cc-leer">Noch kein Gespräch.</p>';
+    log.scrollTop = 0;
+  }
+  function transkriptMarke(i) {
+    const log = $('cc-log');
+    log.querySelectorAll('.cc-mark').forEach(m => m.classList.toggle('aktiv', +m.dataset.h === i));
+    const m = log.querySelector(`.cc-mark[data-h="${i}"]`);
+    if (!m) return;
+    const lr = log.getBoundingClientRect(), mr = m.getBoundingClientRect();
+    log.scrollTo({ top: Math.max(0, log.scrollTop + mr.top - lr.top - lr.height / 3), behavior: reduziert ? 'auto' : 'smooth' });
+  }
+
   /* ---------- Untertitel ---------- */
   let ccZeile = null, ccWoerter = [], ccRaf = null, ccQuelle = null;
   function ccNeu(wer, text, art) {
     const log = $('cc-log');
+    if (S.lauf) S.lauf.verlauf.push({ wer, text, art });
     const d = document.createElement('div');
     d.className = 'cc-zeile cc-' + art;
     d.innerHTML = `<span class="cc-wer">${esc(wer)}</span><p>${text.split(' ').map(w => `<span>${esc(w)}</span>`).join(' ')}</p>`;
@@ -759,9 +793,9 @@
     $('fb-kern-label').textContent = F.kern;
     $('fb-kern-text').textContent = a.kern;
 
-    // Hinweise: die Signale dieses Gesprächs (je nach Gesprächsverlauf), zum Schluss „Das schützt dich“
-    const liste = a.signale.filter(s => (!s.wenn || erg.pfad.includes(s.wenn)) && (!s.wennNicht || !erg.pfad.includes(s.wennNicht)))
-      .map(s => ({ art: s.art, label: F.art[s.art], titel: s.titel, text: s.text }))
+    // Hinweise: die ersten drei Signale, die zum Gesprächsverlauf passen, zum Schluss „Das schützt dich“ – höchstens vier Schritte
+    const liste = a.signale.filter(s => (!s.wenn || erg.pfad.includes(s.wenn)) && (!s.wennNicht || !erg.pfad.includes(s.wennNicht))).slice(0, 3)
+      .map(s => ({ art: s.art, label: F.art[s.art], titel: s.titel, text: s.text, zitat: s.zitat }))
       .concat({ art: 'schutz', label: F.art.schutz, titel: F.tipp, text: a.tipp });
     $('fb-liste').innerHTML = liste.map((h, i) => `<li class="h-karte h-${h.art}" style="--i:${i}">
         <button class="h-kopf" type="button" aria-expanded="false"><span class="h-nr">${H_ICON[h.art]}</span>
@@ -775,6 +809,7 @@
     btn.innerHTML = `<span>${esc(F.details)}</span>${PFEIL}`;
     $('fb-skip').textContent = F.ueberspringen; $('fb-skip').classList.remove('weg');
 
+    transkriptZeigen(liste);
     $('s-spiel').dataset.phase = 'feedback';
     fb.hidden = false; fb.scrollTop = 0; $('s-spiel').scrollTop = 0;
     fb.classList.remove('rein'); void fb.offsetWidth; fb.classList.add('rein');
@@ -819,6 +854,7 @@
     }
     [...$('fb-dots').children].forEach((d, j) => { d.className = j === i ? 'jetzt' : fb.gesehen.has(j) ? 'an' : ''; });
     $('fb-zaehler').textContent = f(F.zaehler, { n: i + 1, gesamt: n });
+    transkriptMarke(i);
     const letzter = i === n - 1;
     const letzterImLevel = S.i === lvStart(S.level) + LV[S.level].anzahl - 1;
     const btn = $('fb-weiter');
@@ -866,32 +902,14 @@
     K.musik('intro', 0.3, 1.5);
     $('lv-kicker').textContent = f(LI.kicker, { n: l + 1, gesamt: LV.length });
     const ic = $('lv-icon');
-    ic.innerHTML = BILD.telefon('lvt') + '<span class="lv-zahl" id="lv-zahl">0</span>';
+    ic.innerHTML = BILD.telefon('lvt') + `<span class="lv-zahl" id="lv-zahl">${n}</span>`;
     $('lv-titel').textContent = f(LI.titel, { n: l + 1 });
     $('lv-unter').textContent = lv.kicker;
-    $('lv-info').innerHTML = `<span>${chipHoerer}<b id="lv-n">0</b> ${esc(LI.anrufe)}</span>`;
+    $('lv-info').innerHTML = `<span>${chipHoerer}<b>${n}</b> ${esc(LI.anrufe)}</span>`;
     $('lv-los').innerHTML = esc(LI.los) + ' ' + PFEIL;
     vorladen(C.anrufe[S.i]);
-    // die Anrufe des Levels fliegen in die Kachel, die Zahl zählt mit
-    const zahl = $('lv-zahl'), zahl2 = $('lv-n');
-    (async () => {
-      await warte(reduziert ? 0 : 900);
-      zahl.classList.add('da');
-      for (let k = 1; k <= n; k++) {
-        if (ep !== S.epoche) return;
-        if (!reduziert) {
-          const w = Math.random() * Math.PI * 2, fl = document.createElement('span');
-          fl.className = 'flieger'; fl.style.setProperty('--fx', Math.cos(w) * 160 + 'px'); fl.style.setProperty('--fy', Math.sin(w) * 120 - 40 + 'px');
-          fl.innerHTML = chipHoerer;
-          ic.appendChild(fl); setTimeout(() => fl.remove(), 800);
-        }
-        await warte(reduziert ? 0 : 300);
-        zahl.textContent = k; zahl2.textContent = k;
-        zahl.classList.remove('tick'); void zahl.offsetWidth; zahl.classList.add('tick');
-        K.fx.pop(k);
-      }
-      K.fx.fertig();
-    })();
+    // Anrufe kommen einzeln (nicht wie Mails im Stapel): nur die Zahl springt an der Kachel auf
+    setTimeout(() => { if (ep === S.epoche) { $('lv-zahl').classList.add('da'); K.fx.pop(1); } }, reduziert ? 0 : 900);
     setTimeout(() => { if (ep === S.epoche) $('lv-los').focus({ preventScroll: true }); }, 400);
   }
   $('lv-los').addEventListener('click', () => {
@@ -913,7 +931,7 @@
     const r = erg.filter(istRichtig).length, beute = erg.reduce((x, e) => x + ((e && e.beute) || 0), 0);
     const perfekt = r === n, gut = r * 2 >= n, letztes = l === LV.length - 1;
     const titel = perfekt ? LE.perfekt : gut ? f(LE.gut, { n: l + 1 }) : LE.knapp;
-    const weiterText = letztes ? LE.zumErgebnis : (l === 0 && !S.pauseFertig ? LE.zumTipp : f(LE.naechstesLevel, { n: l + 2 }));
+    const weiterText = letztes ? LE.zumSchluss : (l === 0 && !S.pauseFertig ? LE.zumTipp : f(LE.naechstesLevel, { n: l + 2 }));
     const mitte = `<span class="m-symbol ${gut ? '' : 'nein'}"><svg viewBox="0 0 24 24"><path d="${gut ? 'm5 12.5 4.5 4.5L19 7.5' : 'M6.5 6.5l11 11M17.5 6.5l-11 11'}"/></svg></span>
       <span class="m-prozent">0 %</span><span class="m-richtig">${esc(f(LE.richtig, { richtig: r, gesamt: n }))}</span>`;
     $('le-karte').innerHTML = `
@@ -933,50 +951,61 @@
     if (!beute) setTimeout(() => konfetti(perfekt ? 120 : 80, 'cct'), reduziert ? 0 : 1500);
     $('le-weiter').addEventListener('click', () => {
       K.fx.klick();
-      if (letztes) ende();
-      else if (l === 0 && !S.pauseFertig) pauseZeigen();
+      if (letztes) nuggetZeigen('schluss');
+      else if (l === 0 && !S.pauseFertig) nuggetZeigen('pause');
       else levelIntro(l + 1);
     });
     setTimeout(() => { const b = $('le-weiter'); if (b) b.focus({ preventScroll: true }); }, 900);
   }
 
-  /* ================= Pause: Vishing-Nugget (erst die Lehren, dann die Frage) ================= */
-  function pauseZeigen() {
+  /* ================= Nugget: nach Level 1 der Sicherheitstipp (drei Lehren),
+     nach dem letzten Level „Zum Schluss“ (ein Tipp, dann die Frage und die Rückruf-Regel) ================= */
+  function nuggetZeigen(teil) {
     ++S.epoche;
     zeige('s-pause');
     K.musik('intro', 0.3, 2);
-    const P = C.pause;
-    $('pause-kicker').textContent = P.kicker; $('pause-titel').textContent = P.titel;
-    $('nugget-lead').textContent = P.lead; $('nugget-zurueck').textContent = P.zurueck;
+    const T = C[teil];
+    S.nugget = teil;
+    $('pause-kicker').textContent = T.kicker; $('pause-titel').textContent = T.titel;
+    $('nugget-zurueck').textContent = C.pause.zurueck;
     $('nugget').hidden = false; $('pause-quiz').hidden = true;
     S.pause = null; S.karteMax = 0;
-    $('nugget-punkte').innerHTML = P.karten.map((k, i) => `<button type="button" data-i="${i}" aria-label="${esc(f(P.lehre, { n: i + 1, gesamt: P.karten.length }))}"></button>`).join('');
+    $('nugget-punkte').innerHTML = T.karten.length < 2 ? '' : T.karten.map((k, i) => `<button type="button" data-i="${i}" aria-label="${esc(f(C.pause.lehre, { n: i + 1, gesamt: T.karten.length }))}"></button>`).join('');
     $('nugget-punkte').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { K.fx.klick(); karteZeigen(+b.dataset.i); }));
     karteZeigen(0);
   }
   function karteZeigen(i) {
-    const P = C.pause, k = P.karten[i], n = P.karten.length, el = $('nugget-karte');
+    const P = C.pause, T = C[S.nugget], k = T.karten[i], n = T.karten.length, el = $('nugget-karte');
     S.karte = i; S.karteMax = Math.max(S.karteMax, i);
     el.style.setProperty('--farbe', k.farbe);
-    el.innerHTML = `<span class="nk-icon">${icon(k.icon)}</span>
-      <div class="nk-text"><p class="nk-nr">${esc(f(P.lehre, { n: i + 1, gesamt: n }))}</p><h3>${esc(k.titel)}</h3><p class="nk-inhalt">${esc(k.text)}</p>
-        <p class="nk-beispiel">${chipHoerer}<span><b>${esc(P.beispiel)}:</b> ${esc(k.beispiel)}</span></p></div>`;
+    el.innerHTML = `<div class="nk-text">
+        ${k.einleitung ? `<p class="nk-einleitung">${esc(k.einleitung)}</p>` : ''}
+        ${n > 1 ? `<p class="nk-nr">${esc(f(P.lehre, { n: i + 1, gesamt: n }))}</p>` : ''}
+        <h3>${esc(k.titel)}</h3><p class="nk-inhalt">${esc(k.text)}</p>
+        ${k.liste ? `<ul class="nk-liste">${k.liste.map((x, j) => `<li style="--i:${j}"><b>${esc(x.titel)}</b><span>${esc(x.beispiel)}</span></li>`).join('')}</ul>` : ''}
+        ${k.beispiel ? `<p class="nk-beispiel">${chipHoerer}<span><b>${esc(P.beispiel)}:</b> ${esc(k.beispiel)}</span></p>` : ''}
+      </div>
+      <div class="nk-bild"><img src="${k.bild}" alt=""></div>`;
     el.classList.remove('rein'); void el.offsetWidth; el.classList.add('rein');
     // Punkte: bereits gesehene Lehren lassen sich wieder aufrufen, spätere noch nicht
     $('nugget-punkte').querySelectorAll('button').forEach((b, j) => { b.className = j === i ? 'an' : j <= S.karteMax ? 'fertig' : ''; b.disabled = j > S.karteMax; });
     $('nugget-zurueck').hidden = i === 0;
-    $('nugget-weiter').innerHTML = esc(i === n - 1 ? P.zurFrage : P.weiter) + ' ' + PFEIL;
+    const letzte = i === n - 1;
+    $('nugget-weiter').innerHTML = esc(!letzte ? P.weiter : S.nugget === 'schluss' ? T.zurFrage : f(C.levelEnde.naechstesLevel, { n: 2 })) + ' ' + PFEIL;
+    $('s-pause').scrollTop = 0;
     K.fx.pop(i);
   }
   function karteWeiter() {
     K.fx.klick();
-    if (S.karte < C.pause.karten.length - 1) karteZeigen(S.karte + 1); else frageZeigen();
+    if (S.karte < C[S.nugget].karten.length - 1) karteZeigen(S.karte + 1);
+    else if (S.nugget === 'schluss') frageZeigen();
+    else { S.pauseFertig = true; levelIntro(1); }
   }
   $('nugget-weiter').addEventListener('click', karteWeiter);
   $('nugget-zurueck').addEventListener('click', () => { if (S.karte > 0) { K.fx.klick(); karteZeigen(S.karte - 1); } });
 
   function frageZeigen() {
-    const P = C.pause, sc = $('s-pause'), inner = sc.querySelector('.pause-inner');
+    const P = C.schluss, sc = $('s-pause'), inner = sc.querySelector('.pause-inner');
     $('nugget').hidden = true; $('pause-quiz').hidden = false;
     $('pause-titel').textContent = P.frageTitel;
     sc.scrollTop = 0;
@@ -990,7 +1019,7 @@
   }
   function pauseWaehlen(i) {
     if (S.pause != null) return;
-    const P = C.pause, o = P.optionen[i];
+    const P = C.schluss, o = P.optionen[i];
     S.pause = o.wert;
     $('pause-optionen').querySelectorAll('button').forEach((b, k) => {
       b.disabled = true;
@@ -1005,14 +1034,11 @@
     $('pause-regel-titel').textContent = P.regel.titel;
     $('pause-regel-punkte').innerHTML = P.regel.punkte.map((r, k) => `<li style="--i:${k}">${icon(r.icon)}<div><b>${r.titel}</b><span>${r.text}</span></div></li>`).join('');
     setTimeout(() => {
-      $('pause-regel').hidden = false; $('pause-weiter').hidden = false; $('pause-weiter').innerHTML = esc(f(C.levelEnde.naechstesLevel, { n: 2 })) + ' ' + PFEIL;
+      $('pause-regel').hidden = false; $('pause-weiter').hidden = false; $('pause-weiter').innerHTML = esc(C.levelEnde.zumErgebnis) + ' ' + PFEIL;
       scrollZu($('s-pause'), $('pause-weiter'));
     }, 500);
   }
-  $('pause-weiter').addEventListener('click', () => {
-    K.fx.klick(); S.pauseFertig = true;
-    levelIntro(1);
-  });
+  $('pause-weiter').addEventListener('click', () => { K.fx.klick(); ende(); });
 
   /* ================= Auswertung (wie das Ergebnis der Serie) ================= */
   function ende() {
@@ -1097,7 +1123,7 @@
   untertitelSetzen(S.cc);
   zeige('s-start');
 
-  // Testsprünge: #intro, #l1, #l2, #anruf1 … #anruf6, #e1, #e2, #pause, #frage, #ende
+  // Testsprünge: #intro, #l1, #l2, #anruf1 … #anruf6, #e1, #e2, #pause, #schluss, #frage, #ende
   const sprung = location.hash.slice(1);
   if (sprung) {
     const testErgebnisse = () => C.anrufe.forEach((a, i) => {
@@ -1115,8 +1141,9 @@
       } else if (l) { S.pauseFertig = +l[1] > 1; levelIntro(Math.min(+l[1] - 1, LV.length - 1)); }
       else if (e) { testErgebnisse(); S.beute = S.ergebnisse.reduce((x, r) => x + r.beute, 0); levelEnde(Math.min(+e[1] - 1, LV.length - 1)); }
       else if (sprung === 'intro') intro();
-      else if (sprung === 'pause') pauseZeigen();
-      else if (sprung === 'frage') { pauseZeigen(); frageZeigen(); }
+      else if (sprung === 'pause') nuggetZeigen('pause');
+      else if (sprung === 'schluss') nuggetZeigen('schluss');
+      else if (sprung === 'frage') { nuggetZeigen('schluss'); frageZeigen(); }
       else if (sprung === 'ende') { testErgebnisse(); S.beute = S.ergebnisse.reduce((x, r) => x + r.beute, 0); ende(); }
     };
     $('start-los').innerHTML = 'Test: ' + esc(sprung);

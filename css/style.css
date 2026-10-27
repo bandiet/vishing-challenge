@@ -234,10 +234,6 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .lv-zahl { position: absolute; top: -12px; right: -14px; min-width: 46px; height: 46px; padding: 0 9px; border-radius: 99px; display: grid; place-items: center;
   background: var(--mint); color: #000; font-weight: 900; font-size: 1.3rem; box-shadow: 0 10px 20px -6px rgba(23, 255, 192, .7); transform: scale(0); }
 .lv-zahl.da { transform: scale(1); transition: transform .4s var(--sprung); }
-.lv-zahl.tick { animation: pop .3s var(--sprung); }
-.flieger { position: absolute; left: 50%; top: 50%; width: 30px; color: #fff; pointer-events: none; animation: fliegen .7s var(--ease) forwards; }
-.flieger .ico { width: 30px; height: 30px; }
-@keyframes fliegen { 0% { opacity: 0; transform: translate(var(--fx), var(--fy)) scale(.6) rotate(-20deg); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(.3); } }
 .intro-level .untertitel { color: var(--text-2); font-size: 1.15rem; margin-top: 8px; }
 .lv-info { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin: 24px 0 30px; }
 .lv-info span { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 99px; background: rgba(255, 255, 255, .05); box-shadow: inset 0 0 0 1px var(--kante); font-size: .92rem; color: var(--text-2); font-weight: 600; }
@@ -372,7 +368,7 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 
 .win-body { position: relative; display: grid; place-items: center; background: radial-gradient(90% 90% at 50% 45%, #2A2740, #1A1825); overflow: hidden; }
 .win-leer { display: none; position: absolute; inset: 0; z-index: 1; padding: 16px 18px; overflow: hidden; pointer-events: none; background: #1B1926; }
-.win-leer::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 45%; background: linear-gradient(transparent, #1B1926); }
+.win-leer::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 16%; background: linear-gradient(transparent, #1B1926); }
 .geraet[data-zustand="ruhe"] .win-leer, .geraet[data-zustand="ring"] .win-leer { display: grid; grid-template-rows: auto 1fr; gap: 10px; }
 .mail-kopf { margin: 0; display: flex; align-items: baseline; gap: 10px; font: 600 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--lilac); }
 .mail-kopf b { color: var(--text); font: 700 20px/1 var(--mono); letter-spacing: 0; font-variant-numeric: tabular-nums; }
@@ -478,7 +474,7 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .urteil-btn { position: relative; display: grid; justify-items: center; gap: 4px; padding: 16px 10px 14px; border-radius: 20px;
   transition: transform .2s var(--sprung), box-shadow .25s, opacity .3s, filter .2s; animation: popEin .5s var(--sprung) both; }
 .urteil-btn.fake { animation-delay: .08s; }
-.urteil-btn .ico { width: 30px; height: 30px; stroke-width: 2.6; }
+.urteil-btn .ico { width: 30px; height: 30px; stroke-width: 2.2; }
 .urteil-btn b { font-size: 1.25rem; font-weight: 900; letter-spacing: .02em; }
 .urteil-btn span { font-size: .78rem; font-weight: 650; opacity: .8; line-height: 1.3; }
 .urteil-btn kbd { position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, .12); color: inherit; opacity: .7; }
@@ -706,7 +702,7 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .regeln li { background: rgba(23, 255, 192, .06); border: 0; box-shadow: inset 0 0 0 1px rgba(23, 255, 192, .2); }
 .regeln li::before { font-family: var(--display); }
 .hacker-sagt p { background: #2A2865; font-family: var(--font); font-weight: 600; }
-.screen-pause .pause-inner { width: min(900px, 100%); align-items: stretch; text-align: left; gap: 16px; }
+.screen-pause .pause-inner { width: min(1040px, 100%); align-items: stretch; text-align: left; gap: 16px; }
 .screen-pause .pause-inner > .kicker { align-self: flex-start; display: inline-flex; padding: 6px 14px; border-radius: 99px; background: rgba(23, 255, 192, .08); box-shadow: inset 0 0 0 1px rgba(23, 255, 192, .32); }
 .pause-frage, .pause-antwort h3 { font-style: normal; font-weight: 850; font-family: var(--display); }
 .pause-szene { font-family: var(--font); color: var(--text-2); }
@@ -717,13 +713,17 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 /* Vishing-Nugget im Sicherheitstipp: eine Lehre nach der anderen, danach die Frage */
 .nugget, .pause-quiz { display: grid; gap: 16px; }
 .pause-inner.rein { animation: screenein .55s var(--ease); }
-.nugget-lead { color: var(--text-2); font-size: clamp(1rem, .3vw + .92rem, 1.15rem); line-height: 1.6; max-width: 62ch; }
-.nugget-karte { --farbe: var(--mint); display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: start; min-height: 240px;
+/* Karte: Text links, Bild rechts (im Stil der Nugget-Bilder der Phishing Challenge) */
+.nugget-karte { --farbe: var(--mint); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .95fr); gap: clamp(18px, 2.6vw, 34px); align-items: center;
   padding: clamp(20px, 3vw, 30px); border-radius: 22px; background: var(--karte); box-shadow: inset 0 0 0 1px var(--kante), inset 0 3px 0 color-mix(in srgb, var(--farbe) 75%, transparent); }
 .nugget-karte.rein { animation: hochein .45s var(--ease); }
-.nk-icon { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; color: var(--farbe);
-  background: color-mix(in srgb, var(--farbe) 16%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--farbe) 38%, transparent); }
-.nk-icon .ico { width: 32px; height: 32px; }
+.nk-bild img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 16px; box-shadow: 0 0 0 1px var(--kante), 0 24px 44px -22px rgba(0, 0, 0, .85); }
+.nk-einleitung { color: var(--text-2); line-height: 1.6; padding-bottom: 14px; margin-bottom: 4px; border-bottom: 1px solid var(--kante); }
+.nk-liste { list-style: none; margin: 2px 0 0; padding: 0; display: grid; gap: 8px; }
+.nk-liste li { display: grid; gap: 2px; padding: 9px 14px; border-radius: 12px; background: rgba(255, 255, 255, .04);
+  box-shadow: inset 3px 0 0 var(--farbe), inset 0 0 0 1px var(--kante); animation: hochein .4s var(--ease) backwards; animation-delay: calc(.15s + var(--i) * .08s); }
+.nk-liste b { font-weight: 750; }
+.nk-liste span { color: var(--lilac); font-size: .92rem; line-height: 1.45; }
 .nk-text { display: grid; gap: 8px; min-width: 0; }
 .nk-nr { font-size: .72rem; font-weight: 850; letter-spacing: .15em; text-transform: uppercase; color: var(--farbe); }
 .nk-text h3 { font-size: clamp(1.35rem, 1.2vw + .8rem, 1.75rem); font-weight: 850; letter-spacing: -.015em; }
@@ -823,6 +823,30 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 @keyframes hinweisNachLinks { to { opacity: 0; transform: translateX(-56px); } }
 @keyframes hinweisNachRechts { to { opacity: 0; transform: translateX(56px); } }
 
+/* ================= Transkript links beim Gerät =================
+   Entwurf b: immer; Entwurf a: erst beim Feedback. Telefon und Gesprächsverlauf stehen nebeneinander,
+   bei Teams (breit) steht der Verlauf unter dem Fenster. Beim Feedback zeigt der Verlauf alles
+   (auch ohne Live-Untertitel) und markiert die Stelle zum aktiven Hinweis. */
+.geraet-spalte.mit-transkript { flex-direction: row; align-items: center; gap: clamp(14px, 1.6vw, 26px); }
+.mit-transkript .geraet { flex: 0 0 auto; width: auto; height: 100%; }
+.mit-transkript .phone { height: min(680px, calc(100dvh - var(--hud-h) - 80px)); }
+.mit-transkript .cc { flex: 1 1 0; max-width: 440px; min-width: 240px; height: min(620px, 100%); animation: hochein .5s var(--ease); }
+.mit-transkript .ablehnen-tipp { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: max-content; max-width: 100%; }
+.mit-transkript:has(.geraet[data-art="teams"]) { flex-direction: column; }
+.mit-transkript:has(.geraet[data-art="teams"]) .geraet { flex: 1 1 0; min-height: 0; width: 100%; height: auto; }
+.mit-transkript:has(.geraet[data-art="teams"]) .cc { flex: 0 0 auto; width: min(100%, 900px); max-width: none; height: 32%; min-height: 150px; }
+.geraet.spricht ~ .cc .cc-punkt { background: var(--rot); animation: blink 1s steps(2) infinite; }
+.cc-titel { display: none; font: 700 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--text-2); padding: 7px 0; }
+#s-spiel[data-phase="feedback"] .cc-titel { display: inline; }
+#s-spiel[data-phase="feedback"] .cc-schalter, #s-spiel[data-phase="feedback"] .cc-nochmal { display: none; }
+#s-spiel[data-phase="feedback"] .cc-anrufer p { display: block; }
+#s-spiel[data-phase="feedback"] .cc-wer::after { content: none; }
+.cc-mark { --c: #FF6B81; color: inherit; background: none; border-radius: 5px; padding: 1px 3px; margin: 0 -3px; -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--c) 65%, transparent); transition: background .3s, box-shadow .3s; }
+.cc-mark.m-gruen { --c: var(--mint); }
+.cc-mark.m-info { --c: #AE9BFF; }
+.cc-mark.aktiv { background: color-mix(in srgb, var(--c) 30%, transparent); box-shadow: 0 0 0 2px var(--c), 0 0 22px -4px var(--c); }
+
 /* ================= Schmal: alles untereinander (Lage – Gerät – Gespräch) ================= */
 @media (max-width: 959px) {
   .screen-spiel { overflow-y: auto; }
@@ -842,8 +866,14 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
   .dialog { align-content: start; }
   .cc { flex: none; max-height: none; min-height: 120px; }
   .cc-log { max-height: 40vh; }
+  /* Transkript beim Gerät: untereinander; beim Feedback steht der Verlauf statt des Geräts über dem Panel */
+  .geraet-spalte.mit-transkript, .mit-transkript:has(.geraet[data-art="teams"]) { flex-direction: column; align-items: stretch; }
+  .mit-transkript .geraet, .mit-transkript:has(.geraet[data-art="teams"]) .geraet { flex: none; width: 100%; height: auto; }
+  .mit-transkript .phone { height: min(620px, 72vh); }
+  .mit-transkript .cc, .mit-transkript:has(.geraet[data-art="teams"]) .cc { flex: none; width: 100%; max-width: none; height: auto; min-height: 120px; }
+  #s-spiel[data-phase="feedback"] .geraet { display: none; }
+  #s-spiel[data-phase="feedback"] .cc-log { max-height: 34vh; }
   /* Feedback: das Panel füllt den Bildschirm, der Knopf klebt unten */
-  #s-spiel[data-phase="feedback"] .geraet-spalte { display: none; }
   .fb { order: 4; flex: 1 0 auto; overflow: visible; width: 100%; max-width: 680px; align-self: center; }
   .h-liste { position: relative; }
   .h-karte:not(.aktiv) { display: none; }
@@ -885,11 +915,11 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
   .win-toast { left: 12px; right: 12px; width: auto; bottom: 12px; }
   .cc-zeile p { font-size: 16px; }
   .regel-punkte, .pause-optionen, .f-raster { grid-template-columns: minmax(0, 1fr); }
-  .nugget-karte { grid-template-columns: minmax(0, 1fr); gap: 14px; min-height: 0; }
-  .nk-icon { width: 52px; height: 52px; border-radius: 15px; }
+  .nugget-karte { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .nk-bild { order: -1; }
   .urteil-btn kbd { display: none; }
-  /* Feedback: das kompakte Telefon bleibt als Kontext darüber; in Schritt 2 nur noch Ergebnis und Hinweise */
-  #s-spiel[data-phase="feedback"] .geraet-spalte { display: flex; }
+  .mit-transkript .phone { height: auto; }
+  /* Feedback: in Schritt 2 nur noch Ergebnis und Hinweise */
   .fb { --pad: 16px; border-radius: 24px; }
   .fb-ikon { width: 44px; height: 44px; }
   .fb-titel { font-size: 1.45rem; }
