@@ -3,7 +3,7 @@
 
 dist/artifact/index.html  Seite ohne <html>/<head>/<body>-Gerüst (das setzt die
                           Artifact-Plattform), CSS und JS eingebettet
-dist/artifact/assets/...  Stimmen, Klänge, Musik, Videos, Bilder (als eigene Dateien
+dist/artifact/assets/...  Stimmen, Klänge, Musik, Bilder (als eigene Dateien
                           veröffentlicht; die Seite lädt sie über relative Pfade)
 dist/artifact/bestanden.json  Liste der veröffentlichten Pfade (für den Publish-Aufruf)
 
@@ -31,7 +31,6 @@ eingebettet = re.sub(r'<script src="(js/[^"]+)"></script>', js_einbetten, eingeb
 
 # Medien: nur, was die Seite wirklich nutzt
 content = open(os.path.join(P, 'js', 'content.js'), encoding='utf-8').read()
-clip_ids = [i for c in re.findall(r"clips: \[([^\]]*)\]", content) for i in re.findall(r"'([^']+)'", c)]
 pfade = []
 for sid in sorted(set(re.findall(r"id: '(c\d_\w+)'", content))):   # nur verwendete Stimmen
     pfade.append(f'assets/stem/{sid}.mp3')
@@ -39,10 +38,8 @@ for ordner in ('sfx', 'musik'):
     for n in sorted(os.listdir(os.path.join(P, 'assets', ordner))):
         if n.endswith('.mp3'):
             pfade.append(f'assets/{ordner}/{n}')
-for n in clip_ids:
-    pfade.append(f'assets/video/{n}.mp4')
-# Idle-Schleifen, Standbilder und Profilfotos der Videoanrufe
-pfade += sorted(set(re.findall(r"(?:idle|poster|foto): '(assets/[^']+)'", content)))
+# Profilfotos der Anrufer
+pfade += sorted(set(re.findall(r"foto: '(assets/[^']+)'", content)))
 pfade += ['assets/hacker.png', 'assets/hacker-face.png', 'assets/intro-gesicht.jpg']
 pfade = list(dict.fromkeys(pfade))
 
@@ -78,8 +75,8 @@ ikon = ('data:image/svg+xml,' + '%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 v
         '%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%2306031A%22/%3E'
         '%3Cpath d=%22M5 17c3-6 5 6 8 0%22 stroke=%22%2335F0C0%22 stroke-width=%222.6%22 fill=%22none%22 stroke-linecap=%22round%22/%3E'
         '%3Cpath d=%22M16 17h3v-4h3v6h3v-3h2%22 stroke=%22%23FF2D87%22 stroke-width=%222.6%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E')
-seite = eingebettet.replace('<title>Mensch oder KI?</title>',
-    '<title>Mensch oder KI?</title>\n<meta name="description" content="Die Vishing- & Deepfake-Challenge von Cyber Crime Awareness: sechs Anrufe in zwei Levels – Mensch mit echtem Anliegen oder KI-Betrug?">\n'
+seite = eingebettet.replace('<title>Vishing Challenge</title>',
+    '<title>Vishing Challenge</title>\n<meta name="description" content="Die Vishing Challenge von Cyber Crime Awareness: sechs Anrufe in zwei Levels – Mensch mit echtem Anliegen oder KI-Betrug?">\n'
     f'<link rel="icon" href="{ikon}">')
 with open(os.path.join(ziel, 'index.html'), 'w', encoding='utf-8') as f:
     f.write(seite)

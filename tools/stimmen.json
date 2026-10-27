@@ -155,38 +155,28 @@
   "tts": "[annoyed] Wie bitte? Was soll das denn jetzt? Ich habe wirklich keine Zeit für so etwas… Die Verbindung hier ist furchtbar, ich… [pause]"
  },
  {
-  "id": "c5_idle",
-  "voice": "1iF3vHdwHKuVKSPDK23Z",
-  "tts": "[breathes softly] Mhm… [pause]"
+  "id": "c7_0",
+  "voice": "d9Ln92LAVKPJLW7vlW1m",
+  "tts": "Hallo, hier ist Tobias Brandt vom IT-Service. Ich rufe wegen Ihres Tickets von heute Morgen an – Excel stürzt bei Ihnen beim Speichern ab, richtig? Haben Sie gerade fünf Minuten? Dann schauen wir uns das kurz zusammen an. [pause]"
  },
  {
-  "id": "c6_0",
-  "voice": "qVRpsZJDV29g1CIPzssm",
-  "tts": "[friendly] Hallo! Hören Sie mich gut? … Super. Schön, dass das so kurzfristig geklappt hat. Ich bin Daniel Kessler. Ich bringe acht Jahre Erfahrung mit Cloud-Infrastruktur mit, zuletzt als Lead Engineer bei einem Logistik-Start-up in Hamburg. Und remote passt für mich perfekt. [pause]"
+  "id": "c7_1a",
+  "voice": "d9Ln92LAVKPJLW7vlW1m",
+  "tts": "Super. Schließen Sie Excel bitte einmal komplett. Dann halten Sie die Steuerungstaste gedrückt und starten Excel neu – es fragt dann, ob es im abgesicherten Modus starten soll. Klicken Sie auf „Ja“. Wenn es so stabil läuft, ist nur ein Add-in schuld – das schalte ich dann zentral für Sie ab. [pause]"
  },
  {
-  "id": "c6_1a",
-  "voice": "qVRpsZJDV29g1CIPzssm",
-  "tts": "Sehr gern. Wir haben die komplette Plattform auf Kubernetes migriert, die Kosten um vierzig Prozent gesenkt und die Ausfallzeiten praktisch auf null gebracht. Ich arbeite gern eigenverantwortlich … und ich wäre übrigens sofort verfügbar. [pause]"
+  "id": "c7_1b",
+  "voice": "d9Ln92LAVKPJLW7vlW1m",
+  "tts": "[laughs] Gute Frage, richtig so! Vier, acht, zwei, eins, drei – aufgemacht heute um acht Uhr zwölf: „Excel stürzt beim Speichern ab“. Im IT-Portal steht auch mein Name als Bearbeiter drin. [pause]"
  },
  {
-  "id": "c6_1b",
-  "voice": "qVRpsZJDV29g1CIPzssm",
-  "tts": "[hesitates] Hm … das wird schwierig, ich bin die nächsten Wochen beruflich viel unterwegs. Aber remote klappt bei mir immer super, das haben meine letzten Teams auch so gemacht. [pause]"
+  "id": "c7_2a",
+  "voice": "d9Ln92LAVKPJLW7vlW1m",
+  "tts": "[surprised] Nein, auf keinen Fall! Ihr Passwort brauchen wir nie – das geben Sie bitte auch sonst niemandem am Telefon. Ich schalte das Add-in zentral ab und schreibe alles ins Ticket. Schönen Tag noch! [pause]"
  },
  {
-  "id": "c6_2a",
-  "voice": "qVRpsZJDV29g1CIPzssm",
-  "tts": "[happy] Super, vielen Dank! Ach, eine Kleinigkeit noch: Könnten Sie den Firmenlaptop an eine andere Adresse schicken? Ich bin gerade mitten im Umzug. [pause]"
- },
- {
-  "id": "c6_2b",
-  "voice": "qVRpsZJDV29g1CIPzssm",
-  "tts": "[laughs] Ins Profil? Ähm … Moment, mein Bild hängt gerade ein bisschen. Ich mache die Kamera kurz aus, dann ist die Verbindung stabiler. [pause]"
- },
- {
-  "id": "c6_idle",
-  "voice": "qVRpsZJDV29g1CIPzssm",
-  "tts": "[breathes softly] Mhm. [pause]"
+  "id": "c7_2b",
+  "voice": "d9Ln92LAVKPJLW7vlW1m",
+  "tts": "Klar, gar kein Problem! Die Nummer der Hotline steht im Intranet. Nennen Sie einfach die Ticketnummer, dann landen Sie wieder bei mir. Bis gleich! [pause]"
  }
 ]

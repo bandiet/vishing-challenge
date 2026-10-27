@@ -106,8 +106,6 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .icon-btn .ton-aus { display: none; }
 .icon-btn[aria-pressed="false"] .ton-an { display: none; }
 .icon-btn[aria-pressed="false"] .ton-aus { display: inline; }
-.cc-btn { font-size: .78rem; font-weight: 900; letter-spacing: .04em; }
-.cc-btn[aria-pressed="true"] { color: var(--mint); box-shadow: inset 0 0 0 1px rgba(23, 255, 192, .4); }
 @keyframes popEin { from { opacity: 0; transform: scale(.6); } }
 @keyframes pop { 40% { transform: scale(1.18); } }
 @keyframes einblenden { from { opacity: 0; transform: translateY(14px); } }
@@ -210,21 +208,14 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .beat-ergebnis { margin: 0; min-height: 1.4em; font: 600 14px/1.4 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--pink); opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .3s; }
 .beat-ergebnis.an { opacity: 1; transform: none; }
 .beat-medium { display: none; width: 100%; justify-items: center; }
-.beat[data-art="audio"] .beat-medium, .beat[data-art="foto"] .beat-medium { display: grid; }
-.rec, .scan { display: none; }
+.beat[data-art="audio"] .beat-medium { display: grid; }
+.rec { display: none; }
 .beat[data-art="audio"] .rec { display: grid; }
-.beat[data-art="foto"] .scan { display: block; }
 .rec { width: min(560px, 100%); gap: 10px; padding: 14px 18px; border-radius: 14px; background: rgba(20, 6, 22, .7); border: 1px solid rgba(255, 45, 135, .3); box-shadow: 0 0 60px -20px rgba(255, 45, 135, .5); }
 .rec-kopf { display: flex; align-items: center; gap: 10px; font: 600 12px/1 var(--mono); letter-spacing: .14em; color: var(--pink); }
 .rec-kopf b { margin-left: auto; color: var(--text); font-variant-numeric: tabular-nums; letter-spacing: 0; font-size: 14px; }
 .rec-punkt { width: 10px; height: 10px; border-radius: 50%; background: var(--rot); animation: blink .8s steps(2) infinite; }
 .rec-welle { width: 100%; height: 70px; display: block; }
-.scan { position: relative; width: min(260px, 60vw); aspect-ratio: 1; border-radius: 18px; overflow: hidden; border: 1px solid rgba(53, 240, 192, .35); box-shadow: 0 0 70px -24px rgba(53, 240, 192, .6); --scan: 0%; }
-.scan img { width: 100%; height: 100%; object-fit: cover; display: block; filter: grayscale(.85) contrast(1.15) brightness(.85); }
-.scan canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-.scan-linie { position: absolute; left: 0; right: 0; top: var(--scan); height: 2px; background: var(--aqua); box-shadow: 0 0 18px 4px rgba(53, 240, 192, .6); opacity: 0; }
-.scan.laeuft .scan-linie { opacity: 1; }
-.scan.fertig img { filter: grayscale(.2) contrast(1.05) hue-rotate(-12deg) saturate(1.3); transition: filter .5s; }
 .skip { position: absolute; right: clamp(16px, 4vw, 48px); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
 
 .app[data-screen="s-intro"] .screen-intro { position: fixed; inset: 0; z-index: 25; }
@@ -255,9 +246,10 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 
 /* ================= Spiel: links Gerät, rechts Lage + Untertitel ================= */
 .screen-spiel { overflow: hidden; }
+/* Telefon und rechte Spalte teilen sich dieselbe Mitte: oben und unten gleich viel Luft */
 .buehne { height: 100%; max-width: 1560px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) var(--panel-b);
   grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "geraet lage" "geraet dialog";
-  gap: clamp(12px, 1.6vw, 24px) clamp(16px, 2vw, 32px); padding: 2px clamp(14px, 2.2vw, 36px) clamp(14px, 2.2vh, 28px); }
+  gap: clamp(12px, 1.6vw, 24px) clamp(16px, 2vw, 32px); padding: clamp(14px, 2.2vh, 28px) clamp(14px, 2.2vw, 36px); }
 .geraet-spalte { grid-area: geraet; }
 .lage { grid-area: lage; }
 .dialog { grid-area: dialog; }
@@ -293,15 +285,11 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .phone-icons { display: flex; gap: 3px; align-items: flex-end; }
 .phone-icons i { display: block; width: 4px; background: var(--text); border-radius: 1px; }
 .phone-icons i:nth-child(1) { height: 5px; } .phone-icons i:nth-child(2) { height: 8px; } .phone-icons i:nth-child(3) { height: 11px; }
-.phone-sperre, .phone-anruf, .phone-video, .phone-tasten { display: none; }
+.phone-sperre, .phone-anruf, .phone-tasten { display: none; }
 .phone-sperre, .phone-anruf { grid-row: 2; }
 .phone-tasten { grid-row: 3; }
 .geraet[data-zustand="ruhe"] .phone-sperre { display: grid; }
 .geraet:not([data-zustand="ruhe"]) .phone-anruf { display: grid; }
-.geraet[data-art="video"][data-zustand="talk"] .phone-anruf,
-.geraet[data-art="video"][data-zustand="ende"] .phone-anruf { display: none; }
-.geraet[data-art="video"][data-zustand="talk"] .phone-video,
-.geraet[data-art="video"][data-zustand="ende"] .phone-video { display: block; }
 .geraet[data-zustand="ring"] .phone-tasten-ring { display: flex; }
 .geraet[data-zustand="talk"] .phone-tasten-talk { display: flex; }
 
@@ -324,7 +312,6 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .ph-name { margin: 0; font: 700 clamp(22px, 3vh, 28px)/1.15 var(--display); overflow-wrap: anywhere; }
 .ph-zeile { margin: 0; font: 500 13px/1.4 var(--mono); color: var(--lilac); }
 .ph-timer { margin: 6px 0 0; min-height: 1em; font: 500 15px/1 var(--mono); font-variant-numeric: tabular-nums; color: var(--aqua); }
-.geraet[data-art="video"][data-zustand="ring"] .phone { background: linear-gradient(rgba(10,6,34,.42), rgba(10,6,34,.82) 70%), var(--poster, none) center / cover; }
 
 .phone-tasten { justify-content: space-around; align-items: flex-end; padding: 0 24px 30px; z-index: 3; }
 .taste { display: grid; justify-items: center; gap: 8px; font: 500 12px/1 var(--display); color: var(--lilac); }
@@ -347,24 +334,7 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 @keyframes nein { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
 
 /* Video */
-.phone-video { position: absolute; inset: 0; background: #000 center / cover no-repeat; z-index: 1; }
-.vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.vid-talk { opacity: 0; transition: opacity .25s; }
-.vid-glitch { position: absolute; inset: 0; width: 100%; height: 100%; display: none; }
-.vid-glitch.an { display: block; }
 /* Kamera aus: Profilbild statt Video, Ring atmet mit der Stimme (wie bei WhatsApp) */
-.vid-aus { position: absolute; inset: 0; overflow: hidden; background: #0b0a14; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding-bottom: 16%; opacity: 0; visibility: hidden; transition: opacity .7s ease, visibility 0s linear .7s; }
-.phone-video.kamera-aus .vid-aus { opacity: 1; visibility: visible; transition: none; }
-.vid-aus::before { content: ""; position: absolute; inset: -40px; background: var(--foto, none) center / cover; filter: blur(30px) saturate(.8) brightness(.45); }
-.vid-aus-bild { position: relative; width: 34%; aspect-ratio: 1; border-radius: 50%; background: var(--foto, none) center / cover; box-shadow: 0 0 0 calc(2px + var(--pegel, 0) * 14px) rgba(255,255,255,calc(.06 + var(--pegel, 0) * .16)), 0 12px 40px rgba(0,0,0,.45); }
-.vid-aus-label { position: relative; margin: 0; display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; background: rgba(0,0,0,.35); font: 600 11px/1 var(--mono); color: rgba(255,255,255,.82); white-space: nowrap; }
-.vid-self { position: absolute; right: 14px; bottom: 120px; width: 26%; aspect-ratio: 3 / 4; border-radius: 14px; background: linear-gradient(160deg, #2a2160, #120b33); border: 1px solid rgba(255,255,255,.18); display: grid; place-items: center; font: 600 11px/1 var(--mono); color: var(--lilac); }
-.vid-kopf { position: absolute; top: 0; left: 0; right: 0; padding: 50px 18px 30px; text-align: center; background: linear-gradient(rgba(0,0,0,.55), transparent); }
-.vid-name { margin: 0; font: 700 19px/1.2 var(--display); text-shadow: 0 1px 6px rgba(0,0,0,.6); }
-.vid-timer { margin: 4px 0 0; font: 500 13px/1 var(--mono); color: #e8fff7; font-variant-numeric: tabular-nums; }
-.vid-warn { position: absolute; z-index: 2; left: 50%; top: 104px; transform: translateX(-50%); margin: 0; padding: 5px 10px 5px 26px; border-radius: 999px; background: rgba(0,0,0,.55); font: 600 10px/1.35 var(--mono); color: var(--gold); width: max-content; max-width: 84%; text-align: center; }
-.vid-warn::before { content: ""; position: absolute; left: 10px; top: 50%; width: 10px; height: 8px; transform: translateY(-50%); background: linear-gradient(90deg, var(--gold) 0 2px, transparent 2px 4px, var(--gold) 4px 6px, transparent 6px 8px, rgba(255,210,77,.3) 8px 10px); }
-.geraet[data-art="video"][data-zustand="talk"] .phone-tasten-talk { position: relative; z-index: 3; background: linear-gradient(transparent, rgba(0,0,0,.5)); padding-top: 30px; }
 
 /* Teams-artiges Fenster (angelehnt an das aktuelle Teams im dunklen Design)
    Vor dem Anruf: Posteingang mit Suchleiste. Im Anruf: Leiste mit Zeit und Name links,
@@ -414,14 +384,6 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .geraet[data-zustand="talk"] .win-kachel, .geraet[data-zustand="ende"] .win-kachel { display: grid; animation: hochein .5s var(--ease); }
 .win .ph-avatar { font-size: clamp(22px, 3vh, 30px); box-shadow: none; }
 .win-zeile { margin: 0; font: 500 11px/1.4 var(--mono); color: #8F8BAA; }
-/* Video in der Teams-Kachel (Bewerbungsgespräch). Kamera aus = wieder Initialen mit Ring, wie in Teams */
-.win-video { display: none; position: absolute; inset: 0; z-index: 2; background: #000 center / cover no-repeat; }
-.geraet.mit-video[data-zustand="talk"] .win-video, .geraet.mit-video[data-zustand="ende"] .win-video { display: block; }
-.geraet.mit-video .win-video.kamera-aus { display: none; }
-.geraet.mit-video .win-video:not(.kamera-aus) ~ .win-kachel { visibility: hidden; }
-.win-video::after { content: ""; position: absolute; inset: 0; border: 2px solid transparent; border-radius: 2px; pointer-events: none; transition: border-color .2s; }
-.geraet.spricht .win-video::after { border-color: var(--teams); }
-.win-vid-warn { top: 12px; }
 .win-namensschild, .win-selbst { display: none; }
 .geraet[data-zustand="talk"] .win-namensschild, .geraet[data-zustand="ende"] .win-namensschild,
 .geraet[data-zustand="talk"] .win-selbst, .geraet[data-zustand="ende"] .win-selbst { display: flex; }
@@ -471,10 +433,16 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .dialog { display: grid; gap: 14px; align-content: center; min-height: 0; max-height: 100%; }
 .cc { display: grid; grid-template-rows: auto minmax(0, 1fr); padding: 16px 18px; border-radius: var(--radius); background: rgba(8,5,26,.62); border: 1px solid var(--kante); box-shadow: var(--licht); min-height: 160px; max-height: min(48vh, 440px); }
 .cc-kopf { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
-.cc-live { display: inline-flex; align-items: center; gap: 8px; font: 600 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
-.cc-live i { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
-.geraet-spalte:has(.geraet.spricht) ~ .dialog .cc-live { color: var(--rot); }
-.geraet-spalte:has(.geraet.spricht) ~ .dialog .cc-live i { background: var(--rot); animation: blink 1s steps(2) infinite; }
+.cc-schalter { display: inline-flex; align-items: center; gap: 9px; padding: 6px 7px 6px 12px; border-radius: 99px; box-shadow: inset 0 0 0 1px var(--kante-2);
+  font: 700 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--text-2); transition: box-shadow .2s, color .2s; }
+.cc-schalter:hover { box-shadow: inset 0 0 0 1px rgba(23, 255, 192, .5); }
+.cc-punkt { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
+.geraet-spalte:has(.geraet.spricht) ~ .dialog .cc-punkt { background: var(--rot); animation: blink 1s steps(2) infinite; }
+.schalter { position: relative; width: 30px; height: 18px; border-radius: 99px; background: rgba(255, 255, 255, .16); transition: background .2s; }
+.schalter::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform .25s var(--ease), background .2s; }
+.cc-schalter[aria-checked="true"] { color: var(--mint); box-shadow: inset 0 0 0 1px rgba(23, 255, 192, .45); }
+.cc-schalter[aria-checked="true"] .schalter { background: var(--mint); }
+.cc-schalter[aria-checked="true"] .schalter::after { transform: translateX(12px); background: var(--aqua-ink); }
 .cc-nochmal { padding: 4px 6px; font-size: 12px; }
 .cc-log { overflow-y: auto; display: grid; gap: 14px; align-content: start; scroll-behavior: smooth; padding-right: 4px; }
 .cc-leer { margin: 0; font: 500 13px/1.4 var(--mono); color: var(--dim); }
@@ -606,7 +574,7 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .tipp b { font: 600 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--aqua); }
 
 /* ================= Pause ================= */
-.screen-pause { display: grid; place-items: center; }
+.screen-pause { display: block; }   /* .pause-inner zentriert sich selbst (margin auto, min-height 100 %) und wächst mit – langer Inhalt bleibt oben erreichbar */
 .pause-inner { width: min(860px, 100%); display: grid; gap: 18px; padding-block: 32px; }
 .pause-szene { margin: 0; font: 500 18px/1.6 var(--display); color: var(--lilac); max-width: 62ch; }
 .pause-frage { margin: 6px 0 0; font: italic 800 26px/1.2 var(--display); }
@@ -751,6 +719,31 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .pause-antwort { background: var(--karte); border: 0; box-shadow: inset 0 0 0 1px var(--kante); border-radius: 20px; }
 .regel-punkte li { background: rgba(23, 255, 192, .07); border: 0; box-shadow: inset 0 0 0 1px rgba(23, 255, 192, .25); }
 #pause-weiter { align-self: flex-start; }
+
+/* Vishing-Nugget im Sicherheitstipp: eine Lehre nach der anderen, danach die Frage */
+.nugget, .pause-quiz { display: grid; gap: 16px; }
+.pause-inner.rein { animation: screenein .55s var(--ease); }
+.nugget-lead { color: var(--text-2); font-size: clamp(1rem, .3vw + .92rem, 1.15rem); line-height: 1.6; max-width: 62ch; }
+.nugget-karte { --farbe: var(--mint); display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: start; min-height: 240px;
+  padding: clamp(20px, 3vw, 30px); border-radius: 22px; background: var(--karte); box-shadow: inset 0 0 0 1px var(--kante), inset 0 3px 0 color-mix(in srgb, var(--farbe) 75%, transparent); }
+.nugget-karte.rein { animation: hochein .45s var(--ease); }
+.nk-icon { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; color: var(--farbe);
+  background: color-mix(in srgb, var(--farbe) 16%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--farbe) 38%, transparent); }
+.nk-icon .ico { width: 32px; height: 32px; }
+.nk-text { display: grid; gap: 8px; min-width: 0; }
+.nk-nr { font-size: .72rem; font-weight: 850; letter-spacing: .15em; text-transform: uppercase; color: var(--farbe); }
+.nk-text h3 { font-size: clamp(1.35rem, 1.2vw + .8rem, 1.75rem); font-weight: 850; letter-spacing: -.015em; }
+.nk-inhalt { color: var(--text-2); line-height: 1.6; }
+.nk-beispiel { margin-top: 6px; display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: rgba(255, 255, 255, .04);
+  box-shadow: inset 0 0 0 1px var(--kante); color: var(--lilac); font-size: .92rem; line-height: 1.5; }
+.nk-beispiel .ico { color: var(--farbe); margin-top: 1px; }
+.nk-beispiel b { color: var(--text); font-weight: 700; }
+.nugget-nav { display: flex; align-items: center; gap: 14px; }
+.nugget-punkte { display: flex; gap: 6px; margin-right: auto; }
+.nugget-punkte button { width: 10px; height: 8px; border-radius: 99px; background: rgba(255, 255, 255, .2); transition: width .3s var(--ease), background .3s; }
+.nugget-punkte button.an { width: 26px; background: var(--mint); }
+.nugget-punkte button.fertig { background: rgba(23, 255, 192, .55); }
+.nugget-punkte button:disabled { cursor: default; }
 .ablehnen-tipp { font-family: var(--font); }
 
 /* Panel rechts: Untertitel füllen den Platz unter der Lage, Antworten und Urteil darunter */
@@ -804,14 +797,12 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
   .phone-tasten { padding: 6px 18px 16px; justify-content: center; gap: 36px; }
   .rund { width: 56px; height: 56px; }
   .rund-deko { display: none; }
-  .geraet[data-art="video"][data-zustand="talk"] .phone,
-  .geraet[data-art="video"][data-zustand="ende"] .phone { aspect-ratio: 9 / 14; height: min(60vh, 540px); width: auto; max-width: 100%; margin: 0 auto; }
-  .geraet[data-art="video"] .phone-tasten-talk { position: absolute; left: 0; right: 0; bottom: 0; }
-  .vid-self { bottom: 90px; width: 22%; }
   .win { aspect-ratio: 16 / 12; }
   .win-toast { left: 12px; right: 12px; width: auto; bottom: 12px; }
   .cc-zeile p { font-size: 16px; }
   .regel-punkte, .pause-optionen, .f-raster { grid-template-columns: minmax(0, 1fr); }
+  .nugget-karte { grid-template-columns: minmax(0, 1fr); gap: 14px; min-height: 0; }
+  .nk-icon { width: 52px; height: 52px; border-radius: 15px; }
   .fb-kopf { grid-template-columns: minmax(0, 1fr) auto; }
   .stempel { grid-column: 1 / -1; justify-self: start; }
   .urteil-btn kbd { display: none; }

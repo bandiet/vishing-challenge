@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------
-   Mensch oder KI? — alle Texte, Abläufe und Zahlen.
+   Vishing Challenge — alle Texte, Abläufe und Zahlen.
    Gesprochene Zeilen: `tts` ist exakt der Text, der bei
    ElevenLabs (eleven_v3) eingesprochen wurde; die Untertitel
    entstehen daraus, indem die [Regieanweisungen] wegfallen.
@@ -7,23 +7,23 @@
    (gleicher Dateiname in assets/stem/).
    ------------------------------------------------------------ */
 window.CONTENT = {
-  titel: 'Mensch oder KI?',
-  untertitel: 'Die Vishing- & Deepfake-Challenge',
+  titel: 'Vishing Challenge',
+  untertitel: 'Mensch oder KI? Betrug am Telefon erkennen',
   marke: 'Cyber Crime Time',
 
   start: {
-    titel: 'Mensch oder KI?',
+    titel: 'Vishing Challenge',
+    akzent: 'Vishing',             // dieses Wort bekommt den Verlauf
     knopf: 'Challenge starten',
     kern: 'Sechs Anrufe, sechs Entscheidungen: Sprichst du mit einem echten Menschen – oder mit einer KI, die dich hereinlegen will?',
     fakten: ['6 Anrufe in 2 Levels', 'Mit Ton – am besten mit Kopfhörern', 'Jeder Fake, der dich täuscht, füllt die Kasse des Hackers']
   },
 
-  /* Intro ohne Stimme: eine Deepfake-Werkbank bei der Arbeit, dann Stille, dann klingelt es. */
+  /* Intro ohne Stimme: eine Stimmklon-Werkbank bei der Arbeit, dann Stille, dann klingelt es. */
   intro: {
     kopf: 'deepfake-kit · bereit',
     beats: [
       { art: 'audio', gross: '3 Sekunden Audio.', klein: 'Mehr braucht es nicht.', ergebnis: 'Stimme geklont' },
-      { art: 'foto', gross: '1 Foto.', klein: 'Mehr braucht es nicht.', ergebnis: 'Gesicht animiert' },
       { art: 'frage', gross: 'Echt oder Fake?', klein: 'Hören kannst du den Unterschied nicht mehr.' },
       { art: 'du', gross: 'Du entscheidest.', klein: 'Sechs Anrufe. Hör genau hin. Hak nach.' },
       { art: 'ring', gross: 'Gleich klingelt dein Telefon.' }
@@ -33,17 +33,15 @@ window.CONTENT = {
   },
 
   hud: {
-    titel: 'Cyber Crime Awareness · Mensch oder KI?',
+    titel: 'Cyber Crime Awareness · Vishing Challenge',
     level: 'Level',
     anruf: 'Anruf',
     beute: 'Hacker-Beute',
-    untertitel: 'Untertitel',
     ton: 'Ton'
   },
 
   telefon: {
     eingehend: 'Eingehender Anruf',
-    eingehendVideo: 'Eingehender Videoanruf',
     annehmen: 'Annehmen',
     ablehnen: 'Ablehnen',
     ablehnenTipp: 'Heute gehst du ran – auflegen kannst du jederzeit.',
@@ -51,11 +49,9 @@ window.CONTENT = {
     duSagst: 'Du sagst …',
     beendet: 'Anruf beendet',
     verbindungWeg: 'Verbindung unterbrochen',
-    instabil: 'Instabile Verbindung',
-    schwach: 'Schwache Verbindung',
-    kameraAus: 'Kamera aus',
     lage: 'Lage',
-    weiterhoeren: 'Nochmal hören'
+    weiterhoeren: 'Nochmal hören',
+    untertitel: 'Live-Untertitel'
   },
 
   urteil: {
@@ -85,9 +81,8 @@ window.CONTENT = {
     zurLevelAuswertung: 'Zur Level-Auswertung',
     beute: 'Hacker-Beute',
     beuteNull: 'leer ausgegangen',
-    kasse: 'In der Kasse:',
+    kasse: 'In der Kasse:'
   },
-
 
   /* ---------------- die sechs Anrufe (Reihenfolge = Spielreihenfolge; Level siehe unten) ---------------- */
   anrufe: [
@@ -268,24 +263,73 @@ window.CONTENT = {
     },
 
     {
+      // Gegenstück zum falschen Helpdesk (c3): gleicher Kanal, aber intern, mit eigenem Ticket und ohne Druck
+      id: 'c7',
+      echt: true,
+      kanal: 'teams',
+      geraet: 'teams',
+      extern: false,
+      stimme: 'd9Ln92LAVKPJLW7vlW1m', // Michael
+      klang: 'teams',
+      atmo: 'helpdesk',
+      klingel: 'teams',
+      zeit: 'Freitag, 13:20',
+      storyTitel: 'Die IT meldet sich – wirklich?',
+      lage: 'Seit gestern stürzt Excel bei dir beim Speichern ab. Heute Morgen hast du im IT-Portal ein Ticket aufgemacht. Nach der Mittagspause klingelt Teams.',
+      anrufer: { name: 'Tobias Brandt', zeile: 'IT-Service · Verfügbar', initialen: 'TB', farbe: '#2E7D6B' },
+      posteingang: [
+        ['IT-Service', 'Ticket 48213 angelegt: Excel stürzt beim Speichern ab'],
+        ['Lena Hofmann', 'Danke nochmal für die Folie!'],
+        ['Kalender', 'Teammeeting · Mo 9:30']
+      ],
+      start: { id: 'c7_0', tts: 'Hallo, hier ist Tobias Brandt vom IT-Service. Ich rufe wegen Ihres Tickets von heute Morgen an – Excel stürzt bei Ihnen beim Speichern ab, richtig? Haben Sie gerade fünf Minuten? Dann schauen wir uns das kurz zusammen an. [pause]' },
+      runden: [
+        [
+          { text: 'Ja, passt. Was soll ich machen?', wert: 'neutral', kommentar: 'In Ordnung – der Anruf passt genau zu deinem Ticket.',
+            antwort: { id: 'c7_1a', tts: 'Super. Schließen Sie Excel bitte einmal komplett. Dann halten Sie die Steuerungstaste gedrückt und starten Excel neu – es fragt dann, ob es im abgesicherten Modus starten soll. Klicken Sie auf „Ja“. Wenn es so stabil läuft, ist nur ein Add-in schuld – das schalte ich dann zentral für Sie ab. [pause]' } },
+          { text: 'Moment – wie lautet denn meine Ticketnummer?', wert: 'gut', kommentar: 'Starker Check: Er kannte Nummer, Uhrzeit und Problem – und du kannst alles im Portal prüfen.',
+            antwort: { id: 'c7_1b', tts: '[laughs] Gute Frage, richtig so! Vier, acht, zwei, eins, drei – aufgemacht heute um acht Uhr zwölf: „Excel stürzt beim Speichern ab“. Im IT-Portal steht auch mein Name als Bearbeiter drin. [pause]' } }
+        ],
+        [
+          { text: 'Brauchen Sie dafür noch mein Passwort?', wert: 'gut', kommentar: 'Kluger Test – und die Antwort war eindeutig: Passwörter fragt die IT nie ab.',
+            antwort: { id: 'c7_2a', tts: '[surprised] Nein, auf keinen Fall! Ihr Passwort brauchen wir nie – das geben Sie bitte auch sonst niemandem am Telefon. Ich schalte das Add-in zentral ab und schreibe alles ins Ticket. Schönen Tag noch! [pause]' } },
+          { text: 'Ich rufe lieber selbst über die IT-Hotline zurück.', wert: 'gut', kommentar: 'Prüfen ist nie falsch – und er hat es dir sogar leicht gemacht.',
+            antwort: { id: 'c7_2b', tts: 'Klar, gar kein Problem! Die Nummer der Hotline steht im Intranet. Nennen Sie einfach die Ticketnummer, dann landen Sie wieder bei mir. Bis gleich! [pause]' } }
+        ]
+      ],
+      signale: [
+        { art: 'gruen', titel: 'Dein eigenes Ticket', text: 'Anlass und Zeitpunkt passen genau zu dem Problem, das du heute Morgen selbst gemeldet hast.' },
+        { art: 'gruen', titel: 'Interner Kontakt', text: 'Kein „Extern“-Hinweis: Er ruft aus dem Firmen-Teams an, mit Namen und Abteilung.' },
+        { art: 'gruen', titel: 'Du machst es selbst', text: 'Keine Remotehilfe, kein Code: Du startest Excel selbst neu, er erklärt nur.', wenn: 'c7_1a' },
+        { art: 'gruen', titel: 'Ticketnummer stimmt', text: 'Er nennt Nummer, Uhrzeit und Problem – und verweist aufs Portal, wo du alles selbst prüfen kannst.', wenn: 'c7_1b' },
+        { art: 'gruen', titel: 'Passwort tabu', text: 'Auf deine Frage kam sofort: niemals. Ein Betrüger hätte zugegriffen.', wenn: 'c7_2a' },
+        { art: 'gruen', titel: 'Rückruf erwünscht', text: 'Er verweist auf die Hotline aus dem Intranet – nicht auf eine Nummer, die er dir selbst nennt.', wenn: 'c7_2b' },
+        { art: 'info', titel: 'Gleicher Kanal wie der Fake', text: 'Auch der falsche Helpdesk rief über Teams an. Den Unterschied machen „Extern“, dein eigenes Ticket – und ob du selbst nachprüfen darfst.' }
+      ],
+      kern: 'Dein eigenes Ticket, ein interner Kontakt, kein Passwort, kein Fernzugriff – und Nachprüfen ausdrücklich erwünscht. So klingt echter IT-Support.',
+      tipp: 'Echte IT fragt nie nach deinem Passwort oder einem MFA-Code. Ruft sie an: Ticketnummer nennen lassen und im Portal prüfen – oder selbst über die Hotline aus dem Intranet zurückrufen.',
+      hacker: { echt: 'Gähn. Das war wirklich nur die IT.', fehlalarm: 'Jetzt traust du nicht mal mehr deiner eigenen IT. Viel Spaß mit dem kaputten Excel!' },
+      beute: 0
+    },
+
+    {
+      // CEO-Fraud mit Stimmklon. Die Aufnahmen stammen aus dem früheren Videoanruf; c5_2b endet mit einem Verbindungsabbruch.
       id: 'c5',
       echt: false,
-      kanal: 'video',
-      geraet: 'video',
+      kanal: 'whatsapp',
+      geraet: 'phone',
       stimme: '1iF3vHdwHKuVKSPDK23Z', // Louisa
       klang: 'messenger',
       atmo: null,
       klingel: 'messenger',
       zeit: 'Donnerstag, 16:52',
-      storyTitel: 'Die Chefin persönlich – per Video?',
-      lage: 'Du vertrittst deine Teamleitung und darfst Zahlungen freigeben. Die Chefin, Dr. Katrin Albers, kennst du aus Townhall-Videos. Jetzt: ein WhatsApp-Videoanruf mit ihrem Foto – von einer fremden Nummer.',
-      anrufer: { name: 'Katrin Albers', zeile: 'WhatsApp-Video · +49 157 3308 1146', initialen: 'KA', farbe: '#8A6A3C', foto: 'assets/video/albers-profil.jpg' },
-      // Kamera erst aus (Profilbild); vor Runde kameraAn (0-basiert) geht sie an – ab da gibt es echte Lip-Sync-Clips
-      video: { poster: 'assets/video/albers-poster.jpg', idle: 'assets/video/c5_idle.mp4', clips: ['c5_2a', 'c5_2b'], kameraAn: 1 },
+      storyTitel: 'Die Chefin persönlich – am Handy?',
+      lage: 'Du vertrittst deine Teamleitung und darfst Zahlungen freigeben. Die Chefin, Dr. Katrin Albers, kennst du aus Townhall-Videos. Jetzt: ein WhatsApp-Anruf mit ihrem Foto – von einer fremden Nummer.',
+      anrufer: { name: '+49 157 3308 1146', zeile: 'WhatsApp-Audio · ~Katrin Albers', initialen: 'KA', farbe: '#8A6A3C', foto: 'assets/albers-profil.jpg' },
       start: { id: 'c5_0', tts: 'Hallo! Gut, dass ich Sie erreiche. Katrin Albers hier. Ich sitze gerade in Zürich zwischen zwei Terminen, deshalb rufe ich vom privaten Handy an. Es geht um etwas sehr Vertrauliches: Wir stehen kurz vor einer Übernahme. Das darf noch niemand wissen, wirklich niemand. Ich brauche heute noch eine Anzahlung von achtundvierzigtausendfünfhundert Euro an die Kanzlei. Können Sie das für mich anstoßen? [pause]' },
       runden: [
         [
-          { text: 'Natürlich. Wohin soll das Geld gehen?', wert: 'riskant', kommentar: 'Autorität plus Zeitdruck – und du warst sofort dabei. Genau so lief es 2024 bei Arup: 25 Millionen Dollar nach einer Deepfake-Videokonferenz.',
+          { text: 'Natürlich. Wohin soll das Geld gehen?', wert: 'riskant', kommentar: 'Autorität plus Zeitdruck – und du warst sofort dabei. So lief es schon 2019: 220.000 € nach einem Anruf mit der geklonten Stimme des Konzernchefs.',
             antwort: { id: 'c5_1a', tts: 'Wunderbar, ich wusste, dass ich mich auf Sie verlassen kann. Die Kanzlei schickt Ihnen gleich die Kontodaten per Mail. Bitte als Eilüberweisung, heute noch – und nicht über die normale Freigabe, sonst ist es morgen im ganzen Haus rum. [pause]' } },
           { text: 'Ich rufe Sie kurz auf Ihrer Büronummer zurück.', wert: 'gut', kommentar: 'Der wichtigste Zug überhaupt. Sie hat ihn abgeblockt: „Dafür ist jetzt wirklich keine Zeit.“',
             antwort: { id: 'c5_1b', tts: '[impatient] Dafür ist jetzt wirklich keine Zeit, ich gehe gleich in den nächsten Termin. Die Kanzlei schickt Ihnen gleich die Kontodaten. Bitte heute noch, und bitte diskret. [pause]' } }
@@ -293,84 +337,32 @@ window.CONTENT = {
         [
           { text: 'In Ordnung, ich kümmere mich darum.', wert: 'riskant', kommentar: '48.500 € – vorbei an Freigabe und Vier-Augen-Prinzip.',
             antwort: { id: 'c5_2a', tts: 'Danke. Ich verlasse mich auf Sie. Und denken Sie dran: Kein Wort zu niemandem. Bis dann. [pause]' } },
-          { text: 'Bevor ich das mache: Halten Sie bitte kurz die Hand vor Ihr Gesicht?', wert: 'gut', kommentar: 'Mutig! Statt den Test zu machen, brach sie das Gespräch ab. Verlass dich aber nicht auf solche Tests: Gute Deepfakes bestehen sie immer öfter.',
+          { text: 'Vorher kurz: Wie heißt das Projekt, das Sie mir letzte Woche übergeben haben?', wert: 'gut', kommentar: 'Starke Kontrollfrage! Statt zu antworten, wurde sie ungehalten – und plötzlich war die Leitung tot.',
             antwort: { id: 'c5_2b', tts: '[annoyed] Wie bitte? Was soll das denn jetzt? Ich habe wirklich keine Zeit für so etwas… Die Verbindung hier ist furchtbar, ich… [pause]', glitch: true } }
         ]
       ],
       signale: [
-        { art: 'rot', titel: 'Unbekannte Nummer, bekanntes Gesicht', text: 'Ein Profilfoto kann jeder hochladen. Und Townhall-Videos liefern genug Material für Gesicht und Stimme.' },
+        { art: 'rot', titel: 'Fremde Nummer, vertraute Stimme', text: 'Ein Profilfoto kann jeder hochladen. Und Townhall-Videos liefern genug Material für einen Stimmklon.' },
         { art: 'rot', titel: 'Geheimhaltung', text: '„Das darf niemand wissen“, „nicht über die normale Freigabe“ – damit soll niemand gegenprüfen.' },
         { art: 'rot', titel: 'Zeitdruck und Autorität', text: 'Die Chefin persönlich, „heute noch“, „Eilüberweisung“. Wer widerspricht da schon?' },
         { art: 'rot', titel: 'Rückruf abgeblockt', text: 'Ein Rückruf über die Büronummer dauert eine Minute. Wer ihn mit Zeitdruck abblockt, will genau diese Prüfung verhindern.', wenn: 'c5_1b' },
-        { art: 'rot', titel: 'Abbruch beim Hand-Test', text: 'Statt die Hand zu heben, wurde sie ungehalten – und plötzlich war die Verbindung weg. Ein Abbruch genau in diesem Moment ist verdächtig, auch wenn gute Deepfakes solche Tests inzwischen oft bestehen.', wenn: 'c5_2b' },
-        { art: 'info', titel: 'Das Video ist echt KI', text: 'Das Gesicht im Video gibt es nicht: ein KI-Foto, animiert mit einer KI-Stimme. So einfach geht das heute.' }
+        { art: 'rot', titel: 'Kontrollfrage? Leitung tot.', text: 'Statt einer Antwort kam Ärger – und dann brach die Verbindung ab. Wer eine einfache Frage zum gemeinsamen Alltag nicht beantworten kann, ist nicht die, die sie vorgibt zu sein.', wenn: 'c5_2b' },
+        { art: 'info', titel: 'Die Stimme ist KI', text: 'Diese Chefin gibt es nicht: Die Stimme ist komplett KI-erzeugt. Für einen echten Klon reichen ein paar Minuten aus einem Townhall-Video.' }
       ],
-      kern: 'Geheim, eilig, am Prozess vorbei – und der Rückruf wird abgeblockt. Auch ein bekanntes Gesicht im Video beweist nichts.',
+      kern: 'Geheim, eilig, am Prozess vorbei – und der Rückruf wird abgeblockt. Auch eine vertraute Stimme beweist nichts.',
       tipp: 'Zahlungen laufen nie am Prozess vorbei – egal, wer anruft. Auflegen, über die bekannte Nummer zurückrufen, Vier-Augen-Prinzip einhalten.',
-      hacker: { reingelegt: '48.500 €. Und ich hab nicht mal ein echtes Gesicht gebraucht.', erwischt: 'Ein Foto, zehn Sekunden Townhall-Video – und trotzdem durchschaut. Respekt.' },
+      hacker: { reingelegt: '48.500 €. Und ich hab nur ihre Stimme gebraucht.', erwischt: 'Perfekte Stimme, perfekte Geschichte – und trotzdem durchschaut. Respekt.' },
       beute: 48500,
       beuteText: '48.500 € Anzahlung'
-    },
-
-    {
-      // Echtzeit-Deepfake im Bewerbungsgespräch (Muster: FBI-Warnung 2022, Pindrop 2024/25, KnowBe4 2024).
-      // Der Kandidat sagt nichts Verbotenes – der Betrug ist seine Identität.
-      id: 'c6',
-      echt: false,
-      kanal: 'teams',
-      geraet: 'teams',
-      extern: true,
-      stimme: 'qVRpsZJDV29g1CIPzssm', // Sebastian
-      klang: 'teams',
-      atmo: null,
-      klingel: 'teams',
-      zeit: 'Montag, 10:00',
-      storyTitel: 'Der perfekte Kandidat',
-      lage: 'Remote-Stelle in deinem Team: Senior Cloud Engineer. Der Lebenslauf ist top. HR ist kurzfristig verhindert – das erste Video-Interview führst du allein.',
-      anrufer: { name: 'Daniel Kessler', zeile: 'Bewerbungsgespräch · Senior Cloud Engineer', initialen: 'DK', farbe: '#3C6A8A', foto: 'assets/video/kessler-profil.jpg' },
-      posteingang: [
-        ['Miriam Baum (HR)', 'Bin krank – kannst du das Interview mit D. Kessler allein führen?'],
-        ['Kalender', 'Bewerbungsgespräch D. Kessler · heute 10:00'],
-        ['Daniel Kessler', 'Re: Bewerbung Senior Cloud Engineer – Lebenslauf anbei']
-      ],
-      // versatz: Das Bild läuft dem Ton konstant hinterher (typisch für Echtzeit-Deepfakes)
-      video: { poster: 'assets/video/kessler-poster.jpg', idle: 'assets/video/c6_idle.mp4', clips: ['c6_0', 'c6_1a', 'c6_1b', 'c6_2a', 'c6_2b'], versatz: 0.2 },
-      start: { id: 'c6_0', tts: '[friendly] Hallo! Hören Sie mich gut? … Super. Schön, dass das so kurzfristig geklappt hat. Ich bin Daniel Kessler. Ich bringe acht Jahre Erfahrung mit Cloud-Infrastruktur mit, zuletzt als Lead Engineer bei einem Logistik-Start-up in Hamburg. Und remote passt für mich perfekt. [pause]' },
-      runden: [
-        [
-          { text: 'Klingt gut. Erzählen Sie mal von Ihrem letzten Projekt.', wert: 'neutral', kommentar: 'Eine normale Frage – aber die Antwort klang wie aus dem Prospekt: Zahlen, Schlagworte, „sofort verfügbar“.',
-            antwort: { id: 'c6_1a', tts: 'Sehr gern. Wir haben die komplette Plattform auf Kubernetes migriert, die Kosten um vierzig Prozent gesenkt und die Ausfallzeiten praktisch auf null gebracht. Ich arbeite gern eigenverantwortlich … und ich wäre übrigens sofort verfügbar. [pause]' } },
-          { text: 'Sie sind in Hamburg? Dann kommen Sie zum zweiten Gespräch doch einfach bei uns vorbei.', wert: 'gut', kommentar: 'Stark: ein Treffen vor Ort. Genau das wollte er vermeiden.',
-            antwort: { id: 'c6_1b', tts: '[hesitates] Hm … das wird schwierig, ich bin die nächsten Wochen beruflich viel unterwegs. Aber remote klappt bei mir immer super, das haben meine letzten Teams auch so gemacht. [pause]' } }
-        ],
-        [
-          { text: 'Passt. Ich sage HR, dass wir Ihnen ein Angebot machen.', wert: 'riskant', kommentar: 'Ein Angebot nach zehn Minuten Video, ohne Identitätsprüfung – und prompt kam die Bitte mit dem Laptop.',
-            antwort: { id: 'c6_2a', tts: '[happy] Super, vielen Dank! Ach, eine Kleinigkeit noch: Könnten Sie den Firmenlaptop an eine andere Adresse schicken? Ich bin gerade mitten im Umzug. [pause]' } },
-          { text: 'Eine Bitte noch: Drehen Sie kurz den Kopf zur Seite – ganz ins Profil?', wert: 'gut', kommentar: 'Genau der Test, an dem Echtzeit-Deepfakes oft scheitern – und plötzlich war die Kamera aus.',
-            antwort: { id: 'c6_2b', tts: '[laughs] Ins Profil? Ähm … Moment, mein Bild hängt gerade ein bisschen. Ich mache die Kamera kurz aus, dann ist die Verbindung stabiler. [pause]', kameraAus: true } }
-        ]
-      ],
-      signale: [
-        { art: 'rot', titel: 'Ton und Mund nie ganz synchron', text: 'Die Lippen liefen der Stimme die ganze Zeit ein Stück hinterher – nicht ab und zu wie bei schlechtem WLAN, sondern konstant. Genau daran fiel 2024 ein Deepfake-Bewerber bei der Sicherheitsfirma Pindrop auf.' },
-        { art: 'rot', titel: 'Kein Treffen vor Ort', text: 'Persönlich vorbeikommen? Lieber nicht. Wer nur im Video existiert, kann jedes Gesicht tragen.', wenn: 'c6_1b' },
-        { art: 'rot', titel: 'Laptop an eine andere Adresse', text: 'Ein bekanntes Muster: Firmenlaptops landen bei Helfern, die sie für Täter im Ausland fernsteuerbar machen („Laptop-Farmen“).', wenn: 'c6_2a' },
-        { art: 'rot', titel: 'Profil-Test? Kamera aus.', text: 'Seitlich gerät ein live ausgetauschtes Gesicht oft ins Rutschen – also ging die Kamera aus. Ein schlechtes Bild allein beweist nichts. Ausweichen genau in diesem Moment ist ein Warnsignal.', wenn: 'c6_2b' },
-        { art: 'info', titel: 'Weichgezeichneter Hintergrund', text: 'In Teams völlig normal – und praktisch für Deepfakes: Die Unschärfe verdeckt die Kanten, an denen ein ausgetauschtes Gesicht ausfranst.' },
-        { art: 'info', titel: 'Live-Deepfakes sind Alltag', text: 'Gesicht und Stimme lassen sich heute live austauschen – mit frei verfügbaren Tools, in gut einer Stunde eingerichtet. Das Ziel hier: kein Geld, sondern ein Job mit Zugang zu euren Systemen.' }
-      ],
-      kern: 'Ton und Mund nie ganz synchron, nur remote, ein Lebenslauf wie bestellt: Dieser Deepfake will nicht dein Geld – sondern einen Job und damit Zugang zu euren Systemen.',
-      tipp: 'Bei Remote-Bewerbungen entscheidet der Prozess: Identität über HR prüfen – Ausweis, Video-Ident oder ein Treffen vor Ort. Kamera-Tests helfen, beweisen aber nichts.',
-      hacker: { reingelegt: 'Eingestellt! Ab Montag sitze ich in euren Systemen – mit einem Gesicht, das es nicht gibt.', erwischt: 'Durchschaut. Dabei war mein Gesicht diesmal sogar live.' },
-      beute: 9800,
-      beuteText: 'Erstes Gehalt + Firmenlaptop'
     }
   ],
 
   /* ---------------- Levels ----------------
-     anzahl = so viele Anrufe aus der Liste oben, der Reihe nach. */
+     anzahl = so viele Anrufe aus der Liste oben, der Reihe nach.
+     Nach Level 1 kommt der Sicherheitstipp (unten). */
   levels: [
-    { anzahl: 4, art: 'audio', kicker: 'Audioanrufe – hör genau hin.', info: 'Nur Ton' },
-    { anzahl: 2, art: 'video', kicker: 'Videoanrufe – schau genau hin.', info: 'Mit Bild' }
+    { anzahl: 3, kicker: 'Hör genau hin – und hak nach.' },
+    { anzahl: 3, kicker: 'Anrufe im Job – wem kannst du trauen?' }
   ],
   levelIntro: {
     kicker: 'Level {n} von {gesamt}',
@@ -394,10 +386,33 @@ window.CONTENT = {
     zumErgebnis: 'Zur Auswertung'
   },
 
-  /* ---------------- Sicherheitstipp nach Level 1 ---------------- */
+  /* ---------------- Sicherheitstipp nach Level 1: kleines Vishing-Nugget ----------------
+     Erst die Lehren aus den Feedbacks der ersten Anrufe (karten, eine nach der anderen),
+     dann die Frage mit den vier Optionen und die Rückruf-Regel. Der letzte Knopf kommt aus levelEnde. */
   pause: {
-    kicker: 'Sicherheitstipp',
-    titel: 'Und wenn du dir nicht sicher bist?',
+    kicker: 'Sicherheitstipp · Vishing',
+    titel: 'Vishing: Betrug am Telefon',
+    lead: 'Vishing heißt Voice-Phishing: Betrüger rufen an, statt zu mailen – immer öfter mit KI-Stimmen. Das sind die wichtigsten Lehren aus deinen ersten Anrufen.',
+    karten: [
+      { icon: 'welle', farbe: '#FF2D87', titel: 'Die Stimme ist kein Beweis',
+        text: 'Ein paar Sekunden Audio – etwa aus Videos in sozialen Netzwerken – reichen für einen Stimmklon. Ob ein Anruf echt ist, kannst du nicht hören.',
+        beispiel: 'Jonas klang wie Jonas – und war doch eine KI.' },
+      { icon: 'display', farbe: '#2BB8E8', titel: 'Die Nummer ist kein Beweis',
+        text: 'Angezeigte Nummern lassen sich fälschen. Und umgekehrt: Eine fremde Nummer allein macht noch keinen Fake.',
+        beispiel: 'Die Bank rief von einer fremden Nummer an – und war echt.' },
+      { icon: 'warnung', farbe: '#FFC24D', titel: 'Erkenne das Muster',
+        text: 'Zeitdruck, Angst oder Geheimhaltung plus eine ungewöhnliche Bitte: Geld, PIN oder TAN, Passwörter, Fernzugriff. Das gilt auch, wenn scheinbar Kollegen oder die Chefin anrufen.',
+        beispiel: 'Der „IT-Helpdesk“ wollte ohne Ticket auf deinen Rechner.' },
+      { icon: 'frage', farbe: '#17FFC0', titel: 'Hak nach – und prüf den Weg',
+        text: 'Kontrollfrage, Ticketnummer, der normale Prozess: Echte Anrufer gehen darauf ein. Betrüger weichen aus, machen Druck – oder rufen von außen an, wo intern üblich wäre.',
+        beispiel: '„Extern“ im Teams-Anruf? Deine IT sitzt im eigenen Haus.' }
+    ],
+    lehre: 'Lehre {n} von {gesamt}',
+    beispiel: 'Aus deinen Anrufen',
+    weiter: 'Weiter',
+    zurueck: 'Zurück',
+    zurFrage: 'Und jetzt du',
+    frageTitel: 'Und wenn du dir nicht sicher bist?',
     szene: 'Dein Telefon klingelt. Die Stimme klingt genau wie deine Chefin. Sie bittet dich um etwas Ungewöhnliches – und es eilt. Irgendetwas fühlt sich komisch an.',
     frage: 'Was tust du?',
     optionen: [
@@ -421,18 +436,18 @@ window.CONTENT = {
         { icon: 'phone-out', titel: 'Selbst zurückrufen', text: 'Über eine Nummer, die DU kennst – nicht die im Display und nicht die aus dem Gespräch.' },
         { icon: 'key', titel: 'Codewort vereinbaren', text: 'In der Familie und im Team – für Notfälle und ungewöhnliche Anweisungen.' }
       ]
-    },
-    knopf: 'Weiter zu Level 2'
+    }
   },
 
   /* ---------------- Auswertung ---------------- */
   auswertung: {
     titel: 'Auswertung',
+    // fehler = höchstens so viele falsch erkannte Anrufe (der erste passende Rang gilt)
     raenge: [
-      { ab: 6, titel: 'Deepfake-Detektiv:in', text: 'Sechs von sechs. Dich legt so schnell keine KI rein.' },
-      { ab: 5, titel: 'Scharfes Gehör', text: 'Fast perfekt. Ein Anruf hat dich erwischt – schau dir an, welcher.' },
-      { ab: 4, titel: 'Wachsam – mit Lücken', text: 'Du bist auf dem richtigen Weg. Achte noch mehr auf das Muster hinter den Anrufen.' },
-      { ab: 0, titel: 'Leichte Beute', text: 'Die KI hatte heute leichtes Spiel. Aber jetzt kennst du ihre Tricks.' }
+      { fehler: 0, titel: 'Deepfake-Detektiv:in', text: 'Alle Anrufe richtig erkannt. Dich legt so schnell keine KI rein.' },
+      { fehler: 1, titel: 'Scharfes Gehör', text: 'Fast perfekt. Ein Anruf hat dich erwischt – schau dir an, welcher.' },
+      { fehler: 2, titel: 'Wachsam – mit Lücken', text: 'Du bist auf dem richtigen Weg. Achte noch mehr auf das Muster hinter den Anrufen.' },
+      { fehler: 99, titel: 'Leichte Beute', text: 'Die KI hatte heute leichtes Spiel. Aber jetzt kennst du ihre Tricks.' }
     ],
     richtig: 'richtig erkannt',
     beuteNull: 'Der Hacker geht leer aus.',
@@ -450,7 +465,7 @@ window.CONTENT = {
     ],
     nachgehakt: 'mal nachgehakt',
     nochmal: 'Nochmal spielen',
-    kleingedruckt: 'Alle Stimmen, Bilder und Videos in dieser Challenge wurden mit KI erzeugt – auch die der echten Anrufer.',
-    quellen: 'Hintergrund: Lagebilder von Polizei und Verbraucherzentralen zu KI-Schockanrufen, Sicherheitsberichte zu Teams-Vishing (2026), Warnungen von FBI und Sicherheitsfirmen zu Deepfake-Bewerbern (2022–2025) sowie die bekannten Fälle Arup (2024) und Ferrari (2024).'
+    kleingedruckt: 'Alle Stimmen und Bilder in dieser Challenge wurden mit KI erzeugt – auch die der echten Anrufer.',
+    quellen: 'Hintergrund: Lagebilder von Polizei und Verbraucherzentralen zu KI-Schockanrufen, Sicherheitsberichte zu Teams-Vishing (2026) sowie die bekannten Fälle eines britischen Energieversorgers (2019), Arup (2024) und Ferrari (2024).'
   }
 };

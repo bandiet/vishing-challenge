@@ -2,7 +2,7 @@
 // (gebaut von tools/bouw-artifact.py) geht unverändert online; es gibt keinen Servercode.
 // "name" muss dem Namen des Workers im Cloudflare-Dashboard entsprechen.
 {
-  "name": "mensch-oder-ki-2",
+  "name": "vishing-challenge",
   "compatibility_date": "2026-10-01",
   "assets": {
     "directory": "./dist/site"

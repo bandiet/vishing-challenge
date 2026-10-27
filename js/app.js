@@ -1,12 +1,12 @@
 /* ------------------------------------------------------------
-   Mensch oder KI? 2.0 — im Format der Phishing Challenge 2.0
+   Vishing Challenge — im Format der Phishing Challenge 2.0
    Start (Titel, Welle, fliegende Symbole) → Intro ohne Stimme
-   (Deepfake-Werkbank) → Level 1 (Audioanrufe) → Level-Auswertung
-   → Sicherheitstipp → Level 2 (Videoanrufe) → Level-Auswertung
-   → Auswertung. Punkte = die Beute des Hackers (je weniger, desto besser).
+   (Stimmklon-Werkbank) → Level 1 (3 Anrufe) → Level-Auswertung
+   → Sicherheitstipp (Vishing-Nugget, Frage am Ende) → Level 2 (3 Anrufe)
+   → Level-Auswertung → Auswertung. Punkte = die Beute des Hackers (je weniger, desto besser).
    Jeder Anruf: Lage → Stille → Klingeln → Gespräch (zwei
    Wahlrunden) → Urteil im Panel → Feedback (Kernsatz + antippbare Signale).
-   Sprünge zum Testen: #intro, #l1, #l2, #anruf1 … #anruf6, #e1, #e2, #pause, #ende
+   Sprünge zum Testen: #intro, #l1, #l2, #anruf1 … #anruf6, #e1, #e2, #pause, #frage, #ende
    ------------------------------------------------------------ */
 (function () {
   const C = window.CONTENT;
@@ -21,7 +21,7 @@
 
   const S = {
     i: 0, level: 0, ergebnisse: [], beute: 0, pause: null, pauseFertig: false,
-    cc: true, lauf: null, epoche: 0
+    cc: false, lauf: null, epoche: 0, karte: 0
   };
   const f = (t, w) => String(t).replace(/\{(\w+)\}/g, (m, k) => (w && k in w ? w[k] : m));
 
@@ -50,7 +50,9 @@
     frage: '<path d="M4 5h16v11H9l-5 4z"/><path d="M10 9a2 2 0 1 1 2.6 1.9c-.4.2-.6.5-.6.9v.4M12 13.8h.01"/>',
     kamera: '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/>',
     rueckruf: '<path d="M6.6 3.2 8.8 5c.4.3.5.9.3 1.4L8 8.8a12 12 0 0 0 7.2 7.2l2.4-1.1c.5-.2 1-.1 1.4.3l1.8 2.2c.4.5.3 1.2-.2 1.6l-1.6 1.3c-.9.7-2.1.9-3.1.5A18.4 18.4 0 0 1 3.2 8.2c-.4-1-.2-2.2.5-3.1L5 3.4c.4-.5 1.1-.6 1.6-.2z"/><path d="M15 3h6v6M21 3l-6 6"/>',
-    display: '<rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M9 7h6M9 10.5h4M11 18h2"/>'
+    display: '<rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M9 7h6M9 10.5h4M11 18h2"/>',
+    welle: '<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>',
+    warnung: '<path d="M12 4 21.5 20h-19z"/><path d="M12 10v4.5M12 17.2v.01"/>'
   };
   const icon = (n, cls) => `<svg class="ico ${cls || ''}" viewBox="0 0 24 24">${ICONS[n] || ''}</svg>`;
   const HOERER = 'M6.6 3.2 8.8 5c.4.3.5.9.3 1.4L8 8.8a12 12 0 0 0 7.2 7.2l2.4-1.1c.5-.2 1-.1 1.4.3l1.8 2.2c.4.5.3 1.2-.2 1.6l-1.6 1.3c-.9.7-2.1.9-3.1.5A18.4 18.4 0 0 1 3.2 8.2c-.4-1-.2-2.2.5-3.1L5 3.4c.4-.5 1.1-.6 1.6-.2z';
@@ -204,7 +206,7 @@
   function startAufbauen() {
     $('hud-titel').textContent = C.hud.titel;
     $('hud-beute-label').textContent = C.hud.beute;
-    $('start-titel').innerHTML = C.start.titel.split(' ').map((w, i) => `<span class="${i === 2 ? 'wort-ki' : ''}">${esc(w)}</span>`).join(' ');
+    $('start-titel').innerHTML = C.start.titel.split(' ').map(w => `<span class="${w === C.start.akzent ? 'wort-ki' : ''}">${esc(w)}</span>`).join(' ');
     $('start-los').innerHTML = esc(C.start.knopf) + ' ' + PFEIL;
     $('start-kern').textContent = C.start.kern;
     $('start-fakten').innerHTML = C.start.fakten.map(x => `<li>${esc(x)}</li>`).join('');
@@ -221,8 +223,6 @@
 
   /* ================= Intro ================= */
   let introAbbruch = false;
-  const introBild = new Image();
-  introBild.src = C.intro.foto;
 
   async function intro() {
     zeige('s-intro');
@@ -230,7 +230,6 @@
     const ep = ++S.epoche;
     const ok = () => !introAbbruch && ep === S.epoche;
     $('intro-skip').textContent = C.intro.skip;
-    $('scan-bild').src = C.intro.foto;
     tippe($('kit-kopf').querySelector('span'), C.intro.kopf, 40);
     await warte(700);
     for (const b of C.intro.beats) {
@@ -260,7 +259,6 @@
     }
     K.fx.schlag();
     if (b.art === 'audio') { await aufnahme(2800, ok); await ergebnis(b, ok); await warte(650); }
-    else if (b.art === 'foto') { await gesichtsScan(2400, ok); await ergebnis(b, ok); await warte(650); }
     else if (b.art === 'frage') { gross.classList.add('flackern'); await warte(900); gross.classList.remove('flackern'); await warte(1500); }
     else await warte(2300);
   }
@@ -301,44 +299,6 @@
     });
   }
 
-  // Werkbank 2: ein Foto wird vermessen – Gitternetz über dem Gesicht
-  const NETZ = [ // normierte Gesichtspunkte (x, y), abgestimmt auf assets/intro-gesicht.jpg
-    [.36, .36], [.41, .345], [.46, .355], [.54, .355], [.59, .345], [.64, .36],
-    [.38, .395], [.42, .385], [.46, .395], [.54, .395], [.58, .385], [.62, .395],
-    [.50, .40], [.50, .50], [.465, .52], [.535, .52], [.50, .53],
-    [.44, .575], [.475, .565], [.525, .565], [.56, .575], [.50, .595],
-    [.31, .40], [.32, .50], [.35, .58], [.40, .64], [.50, .675], [.60, .64], [.65, .58], [.68, .50], [.69, .40]
-  ];
-  const KANTEN = [[0,1],[1,2],[3,4],[4,5],[6,7],[7,8],[9,10],[10,11],[2,12],[3,12],[12,13],[13,14],[13,15],[14,16],[15,16],
-    [17,18],[18,19],[19,20],[17,21],[20,21],[22,23],[23,24],[24,25],[25,26],[26,27],[27,28],[28,29],[29,30],
-    [0,22],[5,30],[8,12],[9,12],[6,22],[11,30],[14,17],[15,20],[16,21],[21,26],[24,17],[28,20],[8,14],[9,15]];
-  function gesichtsScan(dauer, ok) {
-    const box = $('scan'), cv = $('scan-netz'), g = cv.getContext('2d');
-    const r = box.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1);
-    cv.width = r.width * d; cv.height = r.height * d; g.setTransform(d, 0, 0, d, 0, 0);
-    const W = r.width, H = r.height;
-    box.classList.remove('fertig'); box.classList.add('laeuft');
-    K.fx.scan();
-    const t0 = performance.now();
-    return new Promise(fertig => {
-      (function schritt(t) {
-        const f = Math.min(1, (t - t0) / dauer), y = f * 1.1;
-        box.style.setProperty('--scan', (f * 100) + '%');
-        g.clearRect(0, 0, W, H);
-        g.strokeStyle = 'rgba(53,240,192,.75)'; g.lineWidth = 1;
-        KANTEN.forEach(([a, b]) => {
-          const p = NETZ[a], q = NETZ[b];
-          if (p[1] > y || q[1] > y) return;
-          g.beginPath(); g.moveTo(p[0] * W, p[1] * H); g.lineTo(q[0] * W, q[1] * H); g.stroke();
-        });
-        g.fillStyle = '#35F0C0';
-        NETZ.forEach(p => { if (p[1] <= y) { g.beginPath(); g.arc(p[0] * W, p[1] * H, 2, 0, Math.PI * 2); g.fill(); } });
-        if (f < 1 && ok()) requestAnimationFrame(schritt);
-        else { box.classList.remove('laeuft'); box.classList.add('fertig'); fertig(); }
-      })(t0);
-    });
-  }
-
   $('intro-skip').addEventListener('click', () => {
     introAbbruch = true; K.fx.klick(); K.musik('intro', 0.3, 0.8);
     levelIntro(0);
@@ -356,7 +316,6 @@
     const scr = app.dataset.screen;
     $('hud-beute').hidden = !['s-level', 's-spiel', 's-levelende'].includes(scr);
     $('hud-fortschritt').hidden = !['s-spiel', 's-levelende'].includes(scr);
-    $('btn-cc').hidden = scr !== 's-spiel';
     if (!$('hud-fortschritt').hidden) hudAktualisieren();
   }
   function hudAufbauen() {
@@ -385,9 +344,12 @@
       if (f < 1) requestAnimationFrame(schritt); else setTimeout(() => box.classList.remove('steigt'), 700);
     })(t0);
   }
-  $('btn-cc').addEventListener('click', () => {
-    S.cc = !S.cc; $('btn-cc').setAttribute('aria-pressed', S.cc); app.classList.toggle('ohne-cc', !S.cc); K.fx.klick();
-  });
+  // Live-Untertitel: standardmäßig aus, der Schalter im Panel blendet sie ein und aus
+  function untertitelSetzen(an) {
+    S.cc = an; $('cc-schalter').setAttribute('aria-checked', an); app.classList.toggle('ohne-cc', !an);
+    const log = $('cc-log'); log.scrollTop = log.scrollHeight;
+  }
+  $('cc-schalter').addEventListener('click', () => { untertitelSetzen(!S.cc); K.fx.klick(); });
   $('btn-ton').addEventListener('click', () => {
     K.setAn(!K.an); $('btn-ton').setAttribute('aria-pressed', K.an);
   });
@@ -433,14 +395,13 @@
     const avatarHtml = an.foto ? `<img src="${an.foto}" alt="">` : `<span>${an.initialen}</span>`;
     ['ph-avatar', 'win-avatar', 'win-toast-avatar'].forEach(id => { $(id).innerHTML = avatarHtml; $(id).style.setProperty('--farbe', an.farbe); });
     $('ph-name').textContent = an.name; $('ph-zeile').textContent = an.zeile;
-    $('ph-kanal').textContent = a.geraet === 'video' ? C.telefon.eingehendVideo : C.telefon.eingehend;
-    $('ph-timer').textContent = ''; $('vid-name').textContent = an.name; $('vid-timer').textContent = '';
+    $('ph-kanal').textContent = C.telefon.eingehend;
+    $('ph-timer').textContent = '';
     $('win-name').textContent = an.name; $('win-zeile').textContent = an.zeile; $('win-extern').hidden = !a.extern;
     $('win-toast-name').textContent = an.name + (a.extern ? ' (Extern)' : ''); $('win-toast-zeile').textContent = a.extern ? an.zeile : 'ruft Sie an …';
     $('win-call-name').textContent = an.name + (a.extern ? ' (Extern)' : '');
     $('win-timer').textContent = '';
     setZustand('ruhe');
-    videoVorbereiten(a);
     posteingang(a);
     vorladen(a);
     const naechster = C.anrufe[i + 1]; if (naechster) setTimeout(() => vorladen(naechster), 3000);
@@ -523,11 +484,10 @@
     timerId = setInterval(() => {
       const s = Math.floor((performance.now() - timerStart) / 1000);
       const t = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
-      $('ph-timer').textContent = t; $('vid-timer').textContent = t; $('win-timer').textContent = t;
+      $('ph-timer').textContent = t; $('win-timer').textContent = t;
     }, 250);
     K.atmo(a.atmo, a.klang);
-    if (a.video) videoStart();
-    setTimeout(() => { if (ep === S.epoche) sprechen(a.start, nachZeile); }, a.video ? 900 : 650);
+    setTimeout(() => { if (ep === S.epoche) sprechen(a.start, nachZeile); }, 650);
   }
   function ablehnen() {
     if (geraet.dataset.zustand !== 'ring') return;
@@ -587,23 +547,18 @@
       if (ep !== S.epoche || S.lauf.beendet) return;
       geraet.classList.remove('spricht');
       ccFertig();
+      // Die Leitung reißt ab (die falsche Chefin bei der Kontrollfrage)
+      if (zeile.glitch) { K.fx.glitch(0.45); setTimeout(() => { if (ep === S.epoche) beenden('verbindung'); }, 900); return; }
       setTimeout(() => { if (ep === S.epoche && !S.lauf.beendet) danach(); }, 380);
     };
-    if (a.video) { videoSprechen(zeile, el, fertig); return; }
     await K.stimme(zeile.id, a.klang, fertig);
     if (ep !== S.epoche) { K.stimmeStop(); return; }
     ccStart(el, () => K.textFortschritt());
   }
 
   function nachZeile() {
-    const L = S.lauf, a = S.a, ep = S.epoche;
+    const L = S.lauf, a = S.a;
     if (L.runde >= a.runden.length) { beenden('ende'); return; }
-    // Videoanruf: Sie schaltet die Kamera ein, bevor du antwortest – du siehst ihr Gesicht, bevor du entscheidest
-    if (a.video && L.runde === a.video.kameraAn && V.box.classList.contains('kamera-aus')) {
-      kameraAn();
-      setTimeout(() => { if (ep === S.epoche && !L.beendet) zeigeWahl(L.runde); }, 900);
-      return;
-    }
     zeigeWahl(L.runde);
   }
 
@@ -645,7 +600,7 @@
     if (!L || L.beendet) return;
     L.beendet = true;
     L.aufgelegt = grund === 'aufgelegt';
-    K.stimmeStop(); K.ringStop(); K.atmoStop(); ccFertig(); videoStop();
+    K.stimmeStop(); K.ringStop(); K.atmoStop(); ccFertig();
     cancelAnimationFrame(ringId); clearInterval(timerId); clearInterval(posteingang.id);
     geraet.classList.remove('spricht');
     $('wahl').hidden = true; $('cc-nochmal').hidden = true;
@@ -685,168 +640,6 @@
       g.fillStyle = `rgba(${rgb},${0.06 + p * 0.18})`; g.fill();
     }
     if (z === 'ring' || z === 'talk') ringId = requestAnimationFrame(ringZeichnen);
-  }
-
-  /* ================= Video (Deepfake) ================= */
-  // Zwei Bühnen: das Handy (WhatsApp-Video) und die große Kachel im Teams-Fenster. V zeigt auf die des laufenden Anrufs.
-  const BUEHNEN = {
-    phone: { box: $('ph-video'), idle: $('vid-idle'), talk: $('vid-talk'), glitch: $('vid-glitch'), warn: $('vid-warn') },
-    teams: { box: $('win-video'), idle: $('win-vid-idle'), talk: $('win-vid-talk'), glitch: $('win-vid-glitch'), warn: $('win-vid-warn') }
-  };
-  let V = BUEHNEN.phone;
-  let vLauf = null, ausRaf = 0;
-  function videoVorbereiten(a) {
-    Object.values(BUEHNEN).forEach(b => {
-      b.idle.removeAttribute('src'); b.talk.removeAttribute('src'); b.talk.style.opacity = 0;
-      b.box.classList.remove('kamera-aus', 'haengt'); b.glitch.classList.remove('an'); b.warn.hidden = true;
-    });
-    geraet.classList.toggle('mit-video', !!a.video);
-    if (!a.video) { geraet.style.removeProperty('--poster'); return; }
-    V = a.geraet === 'teams' ? BUEHNEN.teams : BUEHNEN.phone;
-    const absolut = pfad => `url("${new URL(pfad, location.href).href}")`; // absolut, sonst löst das Stylesheet den Pfad relativ zu css/ auf
-    const kameraAus = (a.video.kameraAn || 0) > 0;
-    V.box.style.backgroundImage = `url(${a.video.poster})`;
-    V.box.classList.toggle('kamera-aus', kameraAus);
-    V.box.style.setProperty('--foto', absolut(a.anrufer.foto));
-    $('vid-aus-text').textContent = C.telefon.kameraAus;
-    $('vid-aus-bild').style.setProperty('--pegel', 0);
-    // Startet sie ohne Kamera, zeigt auch das Klingeln nur ihr Profilbild
-    geraet.style.setProperty('--poster', absolut(kameraAus ? a.anrufer.foto : a.video.poster));
-    V.idle.src = a.video.idle; V.idle.muted = true; V.idle.load();
-    const ids = [a.start.id]; a.runden.forEach(r => r.forEach(o => ids.push(o.antwort.id)));
-    videoVorbereiten.cache = ids.filter(id => (a.video.clips || []).includes(id)).map(id => { const v = document.createElement('video'); v.preload = 'auto'; v.muted = true; v.src = 'assets/video/' + id + '.mp4'; return v; });
-  }
-  function videoStart() { V.idle.play().catch(() => { }); }
-  function videoStop() {
-    if (vLauf) { cancelAnimationFrame(vLauf.raf); vLauf = null; }
-    cancelAnimationFrame(ausRaf);
-    try { V.talk.pause(); } catch (e) { }
-    V.idle.pause();
-  }
-  // Der Clip läuft stumm; der Ton kommt als dieselbe Aufnahme durch die Leitung.
-  // Weicht das Bild mehr als 0,12 s vom Ton ab, springt es nach. video.versatz lässt das Bild
-  // absichtlich konstant hinterherlaufen – so wie bei einem Echtzeit-Deepfake.
-  async function videoSprechen(zeile, el, fertig) {
-    if (V.box.classList.contains('kamera-aus')) { tonSprechen(zeile, el, fertig); return; }
-    if (!(S.a.video.clips || []).includes(zeile.id)) { standbildSprechen(zeile, el, fertig); return; }
-    const ep = S.epoche, versatz = S.a.video.versatz || 0;
-    V.box.classList.remove('haengt'); V.warn.hidden = true;
-    const p = await K.stimmeLaden(zeile.id);
-    const start = p ? p.start : 0;
-    const abbruchZeile = !!zeile.glitch;
-    let eingefroren = false, bildOk = true;
-    const vt = V.talk;
-    vt.muted = true;
-    vt.src = 'assets/video/' + zeile.id + '.mp4';
-    try { vt.currentTime = start; await vt.play(); } catch (e) { bildOk = false; }
-    if (ep !== S.epoche) { vt.pause(); return; }
-    // Spielt der Browser den Clip nicht ab (Stromsparen, Hintergrund-Tab), läuft die Zeile wie die ohne Clip
-    if (!bildOk) { standbildSprechen(zeile, el, fertig); return; }
-    if (versatz) vt.pause(); // startet erst, wenn der Ton den Versatz voraus ist
-    const tok = await K.stimme(zeile.id, S.a.klang, () => {
-      if (vLauf) { cancelAnimationFrame(vLauf.raf); vLauf = null; }
-      if (abbruchZeile && ep === S.epoche) { verbindungWeg(); return; }
-      setTimeout(() => {
-        if (ep !== S.epoche) return;
-        vt.style.opacity = 0; setTimeout(() => vt.pause(), 250);
-        // Er schaltet die Kamera ab: Teams zeigt dann nur noch seine Initialen
-        if (zeile.kameraAus) { V.box.classList.add('kamera-aus'); setTimeout(() => { if (ep === S.epoche) fertig(); }, 1600); return; }
-        fertig();
-      }, versatz * 1000);
-    });
-    if (ep !== S.epoche) return;
-    vt.style.opacity = 1;
-    ccStart(el, () => K.textFortschritt());
-    vLauf = { raf: 0 };
-    (function schritt() {
-      if (!vLauf || ep !== S.epoche) return;
-      const f = K.fortschritt();
-      if (f != null && !eingefroren) {
-        const t = f * tok.dauer - versatz;
-        if (t >= 0) {
-          if (vt.paused) vt.play().catch(() => { });
-          const soll = start + t;
-          if (Math.abs(vt.currentTime - soll) > 0.12 && soll < (vt.duration || 99)) vt.currentTime = soll;
-        }
-        // Hand-Test: Bild bleibt stehen, der Ton läuft noch kurz weiter – wie ein echter Abbruch
-        if (abbruchZeile && f > 0.7) { eingefroren = true; vt.pause(); bildEinfrieren(vt); V.warn.textContent = C.telefon.instabil; V.warn.hidden = false; }
-      }
-      vLauf.raf = requestAnimationFrame(schritt);
-    })();
-  }
-
-  // Kamera aus: nur Ton. Auf dem Handy atmet das Profilbild mit der Stimme, in Teams der Ring um die Initialen.
-  async function tonSprechen(zeile, el, fertig) {
-    const ep = S.epoche, bild = $('vid-aus-bild');
-    const ende = () => {
-      cancelAnimationFrame(ausRaf); bild.style.setProperty('--pegel', 0);
-      if (zeile.glitch && ep === S.epoche) { verbindungWeg(); return; }
-      fertig();
-    };
-    await K.stimme(zeile.id, S.a.klang, ende);
-    if (ep !== S.epoche) return;
-    ccStart(el, () => K.textFortschritt());
-    let p = 0;
-    cancelAnimationFrame(ausRaf);
-    (function schritt() {
-      if (ep !== S.epoche || S.lauf.beendet) return;
-      p += (K.pegel() - p) * 0.3;
-      bild.style.setProperty('--pegel', p.toFixed(3));
-      ausRaf = requestAnimationFrame(schritt);
-    })();
-  }
-  function kameraAn() {
-    V.idle.play().catch(() => { });
-    V.box.classList.remove('kamera-aus');
-  }
-
-  // Ohne Clip: Das Live-Bild läuft weiter, nur mit weniger Bildern pro Sekunde (schwache Verbindung).
-  // Ab und zu hält ein Bild etwas länger – mehr nicht, keine Unschärfe, keine Pixel.
-  async function standbildSprechen(zeile, el, fertig) {
-    const ep = S.epoche;
-    const box = V.box, warn = V.warn;
-    box.classList.add('haengt'); warn.textContent = C.telefon.schwach; warn.hidden = false;
-    V.idle.play().catch(() => { });
-    const raster = wenigerBilder(V.idle, () => ep === S.epoche && box.classList.contains('haengt'));
-    const ende = () => {
-      raster.stop();
-      box.classList.remove('haengt'); warn.hidden = true;
-      if (zeile.glitch && ep === S.epoche) { bildEinfrieren(V.idle); verbindungWeg(); return; }
-      fertig();
-    };
-    await K.stimme(zeile.id, S.a.klang, ende);
-    if (ep !== S.epoche) { raster.stop(); return; }
-    ccStart(el, () => K.textFortschritt());
-  }
-
-  // Zeichnet das Video mit ca. 11 Bildern pro Sekunde auf die Leinwand darüber
-  function bildZeichnen(video) {
-    const box = V.box.getBoundingClientRect(), d = Math.min(2, devicePixelRatio || 1), cv = V.glitch;
-    const W = Math.round(box.width * d), H = Math.round(box.height * d);
-    if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
-    const g = cv.getContext('2d');
-    const vw = video.videoWidth || 448, vh = video.videoHeight || 832;
-    const s = Math.max(W / vw, H / vh), dw = vw * s, dh = vh * s;
-    try { g.drawImage(video, (W - dw) / 2, (H - dh) / 2, dw, dh); } catch (e) { }
-  }
-  function wenigerBilder(video, weiter) {
-    let aktiv = true, timer = 0, naechsterHaenger = performance.now() + 3500 + Math.random() * 2500;
-    const cv = V.glitch;
-    cv.classList.add('an');
-    (function takt() {
-      if (!aktiv || !weiter()) return;
-      bildZeichnen(video);
-      let warte = 85 + Math.random() * 25;
-      if (performance.now() > naechsterHaenger) { warte = 320 + Math.random() * 260; naechsterHaenger = performance.now() + 3500 + Math.random() * 3000; }
-      timer = setTimeout(takt, warte);
-    })();
-    return { stop() { aktiv = false; clearTimeout(timer); cv.classList.remove('an'); } };
-  }
-  function bildEinfrieren(video) { bildZeichnen(video); V.glitch.classList.add('an'); }
-  function verbindungWeg() {
-    K.fx.glitch(0.45);
-    V.warn.textContent = C.telefon.verbindungWeg; V.warn.hidden = false;
-    setTimeout(() => beenden('verbindung'), 900);
   }
 
   /* ================= Urteil ================= */
@@ -998,10 +791,10 @@
     K.musik('intro', 0.3, 1.5);
     $('lv-kicker').textContent = f(LI.kicker, { n: l + 1, gesamt: LV.length });
     const ic = $('lv-icon');
-    ic.innerHTML = (lv.art === 'video' ? BILD.video('lvv') : BILD.telefon('lvt')) + '<span class="lv-zahl" id="lv-zahl">0</span>';
+    ic.innerHTML = BILD.telefon('lvt') + '<span class="lv-zahl" id="lv-zahl">0</span>';
     $('lv-titel').textContent = f(LI.titel, { n: l + 1 });
     $('lv-unter').textContent = lv.kicker;
-    $('lv-info').innerHTML = `<span>${chipHoerer}<b id="lv-n">0</b> ${esc(LI.anrufe)}</span><span>${lv.art === 'video' ? icon('kamera') : '<svg class="ico" viewBox="0 0 24 24"><path d="M4 14v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>'}${esc(lv.info)}</span>`;
+    $('lv-info').innerHTML = `<span>${chipHoerer}<b id="lv-n">0</b> ${esc(LI.anrufe)}</span>`;
     $('lv-los').innerHTML = esc(LI.los) + ' ' + PFEIL;
     vorladen(C.anrufe[S.i]);
     // die Anrufe des Levels fliegen in die Kachel, die Zahl zählt mit
@@ -1014,7 +807,7 @@
         if (!reduziert) {
           const w = Math.random() * Math.PI * 2, fl = document.createElement('span');
           fl.className = 'flieger'; fl.style.setProperty('--fx', Math.cos(w) * 160 + 'px'); fl.style.setProperty('--fy', Math.sin(w) * 120 - 40 + 'px');
-          fl.innerHTML = lv.art === 'video' ? icon('kamera') : chipHoerer;
+          fl.innerHTML = chipHoerer;
           ic.appendChild(fl); setTimeout(() => fl.remove(), 800);
         }
         await warte(reduziert ? 0 : 300);
@@ -1071,13 +864,47 @@
     setTimeout(() => { const b = $('le-weiter'); if (b) b.focus({ preventScroll: true }); }, 900);
   }
 
-  /* ================= Pause ================= */
+  /* ================= Pause: Vishing-Nugget (erst die Lehren, dann die Frage) ================= */
   function pauseZeigen() {
     ++S.epoche;
     zeige('s-pause');
     K.musik('intro', 0.3, 2);
     const P = C.pause;
     $('pause-kicker').textContent = P.kicker; $('pause-titel').textContent = P.titel;
+    $('nugget-lead').textContent = P.lead; $('nugget-zurueck').textContent = P.zurueck;
+    $('nugget').hidden = false; $('pause-quiz').hidden = true;
+    S.pause = null; S.karteMax = 0;
+    $('nugget-punkte').innerHTML = P.karten.map((k, i) => `<button type="button" data-i="${i}" aria-label="${esc(f(P.lehre, { n: i + 1, gesamt: P.karten.length }))}"></button>`).join('');
+    $('nugget-punkte').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { K.fx.klick(); karteZeigen(+b.dataset.i); }));
+    karteZeigen(0);
+  }
+  function karteZeigen(i) {
+    const P = C.pause, k = P.karten[i], n = P.karten.length, el = $('nugget-karte');
+    S.karte = i; S.karteMax = Math.max(S.karteMax, i);
+    el.style.setProperty('--farbe', k.farbe);
+    el.innerHTML = `<span class="nk-icon">${icon(k.icon)}</span>
+      <div class="nk-text"><p class="nk-nr">${esc(f(P.lehre, { n: i + 1, gesamt: n }))}</p><h3>${esc(k.titel)}</h3><p class="nk-inhalt">${esc(k.text)}</p>
+        <p class="nk-beispiel">${chipHoerer}<span><b>${esc(P.beispiel)}:</b> ${esc(k.beispiel)}</span></p></div>`;
+    el.classList.remove('rein'); void el.offsetWidth; el.classList.add('rein');
+    // Punkte: bereits gesehene Lehren lassen sich wieder aufrufen, spätere noch nicht
+    $('nugget-punkte').querySelectorAll('button').forEach((b, j) => { b.className = j === i ? 'an' : j <= S.karteMax ? 'fertig' : ''; b.disabled = j > S.karteMax; });
+    $('nugget-zurueck').hidden = i === 0;
+    $('nugget-weiter').innerHTML = esc(i === n - 1 ? P.zurFrage : P.weiter) + ' ' + PFEIL;
+    K.fx.pop(i);
+  }
+  function karteWeiter() {
+    K.fx.klick();
+    if (S.karte < C.pause.karten.length - 1) karteZeigen(S.karte + 1); else frageZeigen();
+  }
+  $('nugget-weiter').addEventListener('click', karteWeiter);
+  $('nugget-zurueck').addEventListener('click', () => { if (S.karte > 0) { K.fx.klick(); karteZeigen(S.karte - 1); } });
+
+  function frageZeigen() {
+    const P = C.pause, sc = $('s-pause'), inner = sc.querySelector('.pause-inner');
+    $('nugget').hidden = true; $('pause-quiz').hidden = false;
+    $('pause-titel').textContent = P.frageTitel;
+    sc.scrollTop = 0;
+    inner.classList.remove('rein'); void inner.offsetWidth; inner.classList.add('rein');
     $('pause-szene').textContent = P.szene; $('pause-frage').textContent = P.frage;
     $('pause-antwort').hidden = true; $('pause-regel').hidden = true; $('pause-weiter').hidden = true;
     S.pause = null;
@@ -1102,7 +929,7 @@
     $('pause-regel-titel').textContent = P.regel.titel;
     $('pause-regel-punkte').innerHTML = P.regel.punkte.map((r, k) => `<li style="--i:${k}">${icon(r.icon)}<div><b>${r.titel}</b><span>${r.text}</span></div></li>`).join('');
     setTimeout(() => {
-      $('pause-regel').hidden = false; $('pause-weiter').hidden = false; $('pause-weiter').innerHTML = esc(P.knopf) + ' ' + PFEIL;
+      $('pause-regel').hidden = false; $('pause-weiter').hidden = false; $('pause-weiter').innerHTML = esc(f(C.levelEnde.naechstesLevel, { n: 2 })) + ' ' + PFEIL;
       scrollZu($('s-pause'), $('pause-weiter'));
     }, 500);
   }
@@ -1118,7 +945,7 @@
     const erg = S.ergebnisse;
     const richtig = C.anrufe.filter((a, i) => istRichtig(erg[i])).length;
     const gut = erg.filter(Boolean).reduce((x, e) => x + (e.gut || 0), 0);
-    const rang = A.raenge.find(r => richtig >= r.ab);
+    const rang = A.raenge.find(r => N - richtig <= r.fehler);
     const hackerText = richtig >= N - 1 && !S.beute ? A.hackerGut : (richtig >= N - 2 ? A.hackerMittel : A.hackerSchlecht);
     const mitte = `<span class="m-prozent">0 %</span><span class="m-richtig">${richtig}/${N} ${esc(A.richtig)}</span>`;
     const akte = C.anrufe.map((a, i) => {
@@ -1181,16 +1008,20 @@
       if (z === 'talk' && !$('wahl').hidden && (e.key === '1' || e.key === '2')) waehlen(+e.key - 1);
     }
     if (scr === 's-level' && e.key === 'Enter' && document.activeElement !== $('lv-los')) { e.preventDefault(); $('lv-los').click(); }
-    if (scr === 's-pause' && S.pause == null) {
+    if (scr === 's-pause' && !$('nugget').hidden) {
+      if (e.key === 'ArrowRight') karteWeiter();
+      if (e.key === 'ArrowLeft') $('nugget-zurueck').click();
+    } else if (scr === 's-pause' && S.pause == null) {
       const k = 'abcd'.indexOf(e.key.toLowerCase()); if (k >= 0) pauseWaehlen(k);
     }
   });
 
   /* ================= Start ================= */
   startAufbauen();
+  untertitelSetzen(S.cc);
   zeige('s-start');
 
-  // Testsprünge: #intro, #l1, #l2, #anruf1 … #anruf6, #e1, #e2, #pause, #ende
+  // Testsprünge: #intro, #l1, #l2, #anruf1 … #anruf6, #e1, #e2, #pause, #frage, #ende
   const sprung = location.hash.slice(1);
   if (sprung) {
     const testErgebnisse = () => C.anrufe.forEach((a, i) => {
@@ -1209,6 +1040,7 @@
       else if (e) { testErgebnisse(); S.beute = S.ergebnisse.reduce((x, r) => x + r.beute, 0); levelEnde(Math.min(+e[1] - 1, LV.length - 1)); }
       else if (sprung === 'intro') { K.musik('intro', 0.55, 1.2); intro(); }
       else if (sprung === 'pause') pauseZeigen();
+      else if (sprung === 'frage') { pauseZeigen(); frageZeigen(); }
       else if (sprung === 'ende') { testErgebnisse(); S.beute = S.ergebnisse.reduce((x, r) => x + r.beute, 0); ende(); }
     };
     $('start-los').innerHTML = 'Test: ' + esc(sprung);
