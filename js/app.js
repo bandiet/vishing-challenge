@@ -353,6 +353,9 @@
   /* ================= Spiel ================= */
   function neuesSpiel() {
     S.i = 0; S.level = 0; S.ergebnisse = []; S.beute = 0; S.pause = null; S.pauseFertig = false;
+    // Der Hacker kommt nicht zu jedem Feedback: beim ersten Anruf immer, danach zufällig, insgesamt bei etwa zwei Dritteln
+    const rest = C.anrufe.map((a, i) => i).slice(1).sort(() => Math.random() - .5);
+    S.hackerBei = new Set([0, ...rest.slice(0, Math.round(C.anrufe.length * 2 / 3) - 1)]);
     $('hud-beute-wert').textContent = euro(0);
   }
 
@@ -462,8 +465,8 @@
     vorladen(a);
     const naechster = C.anrufe[i + 1]; if (naechster) setTimeout(() => vorladen(naechster), 3000);
 
-    // Ton: nach dem Intro komplett still; sonst leise Musik, die vor dem Klingeln abbricht
-    const verzoegerung = opt.still ? 4600 : 6200;
+    // Ton: nach dem Intro komplett still (nur kurz – das Intro hat eben „Gleich klingelt dein Telefon“ gesagt); sonst leise Musik, die vor dem Klingeln abbricht
+    const verzoegerung = opt.still ? 2200 : 6200;
     if (!opt.still) {
       K.musik('intro', 0.2, 1.5);
       setTimeout(() => { if (ep === S.epoche) K.musikAus(1.4); }, verzoegerung - 1900);
@@ -489,29 +492,36 @@
     ['Kalender', 'Weekly Vertrieb · Do 10:00'],
     ['IT-Service', 'Wartungsfenster am Samstag']
   ];
+  const MAIL_FARBEN = ['#C4314B', '#5B5FC7', '#2E7D6B', '#B4690E', '#8E44AD', '#1F7AA8', '#A0446B'];
   // Die Liste liegt unter allem anderen und nimmt keine Klicks an; neue Zeilen kommen ruhig, nicht im Takt der Bildwiederholung.
   // Beim falschen Helpdesk (c3) ist das Postfach anfangs leer und läuft dann langsam voll, bis kein Platz mehr ist.
+  // Zeilen wie im Mailprogramm: Kürzel, Absender, Uhrzeit, Betreff; ungelesene fett mit Balken links. Die Zahl am Ordner = ungelesen.
   function posteingang(a) {
     clearInterval(posteingang.id);
     const el = $('win-mails'), neuEl = $('win-mails-neu'), liste = $('win-mail-liste');
-    const zeile = ([von, betreff], neu) => {
-      const li = document.createElement('li'); if (neu) li.className = 'neu';
-      li.innerHTML = `<b>${esc(von)}</b><span>${esc(betreff)}</span>`;
-      liste.prepend(li);
-      while (liste.children.length > 40) liste.lastChild.remove();   // was nicht mehr hineinpasst, schneidet die Liste ab
+    const [h, m] = a.zeit.split(', ')[1].split(':').map(Number);
+    const uhr = vorMin => { const t = (h * 60 + m - vorMin + 1440) % 1440; return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); };
+    const zeile = ([von, betreff], wann, klasse) => {
+      const name = von.includes('@') ? von.split('@')[1] : von;
+      const kuerzel = (von.includes('@') ? name[0] : von.split(' ').map(w => w[0]).join('').slice(0, 2)).toUpperCase();
+      const farbe = MAIL_FARBEN[[...name].reduce((s, c) => s + c.charCodeAt(0), 0) % MAIL_FARBEN.length];
+      const li = document.createElement('li'); li.className = klasse;
+      li.innerHTML = `<i class="m-av" style="--c:${farbe}">${esc(kuerzel)}</i><span class="m-von">${esc(von)}</span><time>${wann}</time><span class="m-betreff">${esc(betreff)}</span>`;
+      return li;
     };
     liste.innerHTML = ''; neuEl.textContent = '';
     if (a.id === 'c3') {
-      let n = 0, k = 0; el.textContent = n;
+      let n = 0, k = 0; el.textContent = '';
       posteingang.id = setInterval(() => {
         n += 1 + Math.floor(Math.random() * 3);
         el.textContent = n; neuEl.textContent = '+' + n + ' neu';
-        zeile(SPAM[k++ % SPAM.length], true);
+        liste.prepend(zeile(SPAM[k++ % SPAM.length], uhr(0), 'ungelesen neu'));
+        while (liste.children.length > 40) liste.lastChild.remove();   // was nicht mehr hineinpasst, schneidet die Liste ab
       }, 650);
     } else {
       const mails = a.posteingang || NORMAL;
-      el.textContent = String(mails.length);
-      mails.slice().reverse().forEach(m => zeile(m));
+      el.textContent = '1';
+      mails.forEach((x, k) => liste.append(zeile(x, uhr(8 + k * 47), k ? '' : 'ungelesen')));
     }
   }
 
@@ -643,6 +653,11 @@
     if (ccZeile) ccWoerter.forEach(w => w.classList.add('an'));
     ccZeile = null; ccQuelle = null;
   }
+  // Wird das Transkript im Gespräch kleiner (die Antworten oder das Urteil erscheinen darunter), bleibt die letzte Zeile sichtbar
+  new ResizeObserver(() => {
+    const log = $('cc-log');
+    if (S.lauf && !$('s-spiel').dataset.phase) log.scrollTop = log.scrollHeight;
+  }).observe($('cc-log'));
 
   /* ---------- Sprechen ---------- */
   let letzte = null;
@@ -842,7 +857,8 @@
     setTimeout(() => btn.focus({ preventScroll: true }), 500);
     // Kassiert der Hacker, zählt die Kasse oben mit
     if (erg.beute) setTimeout(() => { if (ep === S.epoche) beuteZaehlen(kasseVorher, S.beute); }, reduziert ? 0 : 900);
-    // Der Hacker fliegt kurz herein: freut sich, wenn er gewonnen hat, ärgert sich, wenn er durchschaut wurde, gähnt bei echten Anrufen
+    // Der Hacker fliegt kurz herein (nicht jedes Mal, siehe neuesSpiel): freut sich, wenn er gewonnen hat, ärgert sich, wenn er durchschaut wurde, gähnt bei echten Anrufen
+    if (!S.hackerBei.has(S.i)) return;
     const h = a.hacker;
     const text = a.echt ? (erg.richtig ? h.echt : h.fehlalarm) : (gut ? h.erwischt : h.reingelegt);
     const stimmung = !gut ? 'freut' : a.echt ? 'gaehnt' : 'aergert';
@@ -1021,8 +1037,15 @@
     const letzte = i === n - 1;
     $('nugget-weiter').innerHTML = esc(!letzte ? P.weiter : S.nugget === 'schluss' ? T.zurFrage : f(C.levelEnde.naechstesLevel, { n: 2 })) + ' ' + PFEIL;
     $('s-pause').scrollTop = 0;
+    nuggetUeberlauf();
     K.fx.pop(i);
   }
+  // Ragt die Karte über den Bildschirm, bekommen die klebenden Knöpfe unten einen Verlauf
+  function nuggetUeberlauf() {
+    const sc = $('s-pause');
+    sc.classList.toggle('ueberlauf', sc.scrollHeight > sc.clientHeight + 2);
+  }
+  addEventListener('resize', () => { if (app.dataset.screen === 's-pause') nuggetUeberlauf(); });
   function karteWeiter() {
     K.fx.klick();
     if (S.karte < C[S.nugget].karten.length - 1) karteZeigen(S.karte + 1);
@@ -1081,7 +1104,7 @@
     const akte = C.anrufe.map((a, i) => {
       const e = erg[i] || {};
       const st = !a.echt ? (e.zuSpaet ? 'zuSpaet' : e.richtig ? 'entlarvt' : 'getaeuscht') : (e.richtig ? 'echtErkannt' : 'fehlalarm');
-      return `<li class="akte-${st}" style="--i:${i}"><span class="akte-nr">${i + 1}</span><div><b>${esc(a.storyTitel)}</b><span>${C.hud.level} ${levelVon(i) + 1} · ${a.echt ? 'Echt' : 'KI-Fake'} · ${esc(a.anrufer.name)}</span></div><em>${C.feedback[st].stempel}</em></li>`;
+      return `<li class="akte-${st}" style="--i:${i}"><span class="akte-nr">${i + 1}</span><div><b>${esc(a.storyTitel)}</b><span>${C.hud.level} ${levelVon(i) + 1} · ${esc(a.echt ? C.levelEnde.warEcht : C.levelEnde.warFake)} · ${esc(a.anrufer.name)}</span></div><em>${C.feedback[st].stempel}</em></li>`;
     }).join('');
     $('finale').innerHTML = `
       <div class="f-kopf">

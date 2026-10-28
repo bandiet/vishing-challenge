@@ -140,9 +140,21 @@
               </div>
             </div>
             <div class="win-body">
+              <!-- Posteingang wie in einem Mailprogramm: Ordner links (schmal ausgeblendet), Liste rechts -->
               <div class="win-leer" id="win-leer">
-                <p class="mail-kopf"><span>Posteingang</span><b id="win-mails">0</b><em id="win-mails-neu"></em></p>
-                <ul class="mails" id="win-mail-liste"></ul>
+                <div class="mail-ordner">
+                  <span class="mo-neu"><svg class="ico" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></svg>Neue E-Mail</span>
+                  <span class="mo an"><svg class="ico" viewBox="0 0 24 24"><path d="M3 13h5l1.5 3h5l1.5-3h5"/><path d="M5.5 5h13L21 13v6H3v-6z"/></svg>Posteingang<b id="win-mails"></b></span>
+                  <span class="mo"><svg class="ico" viewBox="0 0 24 24"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4M9 13h6M9 17h4"/></svg>Entwürfe</span>
+                  <span class="mo"><svg class="ico" viewBox="0 0 24 24"><path d="M3 11.5 21 3l-7 18-3-7.5z"/><path d="m11 13.5 4-4"/></svg>Gesendet</span>
+                  <span class="mo"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m6 6 12 12"/></svg>Junk-E-Mail</span>
+                  <span class="mo"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10h14V9M10 13h4"/></svg>Archiv</span>
+                </div>
+                <div class="mail-spalte">
+                  <p class="mail-kopf"><span>Posteingang</span><em id="win-mails-neu"></em></p>
+                  <p class="mail-tabs"><span class="an">Relevant</span><span>Sonstige</span></p>
+                  <ul class="mails" id="win-mail-liste"></ul>
+                </div>
               </div>
               <div class="win-kachel">
                 <div class="ph-avatar-wrap">

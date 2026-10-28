@@ -368,18 +368,43 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .geraet:not([data-zustand="talk"]) .wbtn-auflegen { opacity: .4; pointer-events: none; }
 
 .win-body { position: relative; display: grid; place-items: center; background: radial-gradient(90% 90% at 50% 45%, #2A2740, #1A1825); overflow: hidden; }
-.win-leer { display: none; position: absolute; inset: 0; z-index: 1; padding: 16px 18px; overflow: hidden; pointer-events: none; background: #1B1926; }
-.win-leer::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 16%; background: linear-gradient(transparent, #1B1926); }
-.geraet[data-zustand="ruhe"] .win-leer, .geraet[data-zustand="ring"] .win-leer { display: grid; grid-template-rows: auto 1fr; gap: 10px; }
-.mail-kopf { margin: 0; display: flex; align-items: baseline; gap: 10px; font: 600 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--lilac); }
-.mail-kopf b { color: var(--text); font: 700 20px/1 var(--mono); letter-spacing: 0; font-variant-numeric: tabular-nums; }
-.mail-kopf em { font-style: normal; color: var(--gold); letter-spacing: .04em; text-transform: none; }
-.mails { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; align-content: start; overflow: hidden; }
-.mails li { display: grid; grid-template-columns: minmax(0, 40%) minmax(0, 1fr); gap: 12px; padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,.04); font: 500 12px/1.3 var(--mono); }
-.mails li.neu { animation: mailein .35s ease-out; background: rgba(255,210,77,.06); }
+/* Posteingang vor dem Anruf: wie ein Mailprogramm – Ordner links, Liste mit Kürzel, Absender, Uhrzeit und Betreff rechts */
+.win-leer { display: none; position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; background: #1B1926; }
+.geraet[data-zustand="ruhe"] .win-leer, .geraet[data-zustand="ring"] .win-leer { display: grid; grid-template-columns: clamp(150px, 25%, 200px) minmax(0, 1fr); }
+.mail-ordner { display: flex; flex-direction: column; gap: 2px; padding: 14px 10px; background: #211F2E; border-right: 1px solid rgba(255,255,255,.05); font: 500 12px/1.2 var(--display); color: #C9C6DD; white-space: nowrap; }
+.mo-neu { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding: 9px 12px; border-radius: 6px; background: var(--teams-tief); color: #fff; font-weight: 600; }
+.mo { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: 6px; }
+.mail-ordner .ico { width: 15px; height: 15px; color: #9C99B5; }
+.mo-neu .ico { color: #fff; }
+.mo.an { background: rgba(127,133,245,.16); color: #fff; font-weight: 600; box-shadow: inset 3px 0 0 var(--teams); }
+.mo.an .ico { color: var(--teams); }
+.mo b { margin-left: auto; color: var(--teams); font-weight: 700; font-variant-numeric: tabular-nums; }
+.mail-spalte { display: grid; grid-template-rows: auto auto minmax(0, 1fr); min-width: 0; padding: 14px 16px 0; }
+.mail-kopf { margin: 0 0 10px; display: flex; align-items: baseline; gap: 10px; font: 700 16px/1.1 var(--display); color: #fff; }
+.mail-kopf em { margin-left: auto; font: 600 12px/1 var(--display); font-style: normal; color: var(--gold); font-variant-numeric: tabular-nums; }
+.mail-tabs { margin: 0 0 4px; display: flex; gap: 18px; border-bottom: 1px solid rgba(255,255,255,.07); font: 600 12px/1 var(--display); color: #9C99B5; }
+.mail-tabs span { padding-bottom: 8px; }
+.mail-tabs .an { color: #fff; box-shadow: inset 0 -2px 0 var(--teams); }
+.mails { list-style: none; margin: 0; padding: 0; display: grid; align-content: start; overflow: hidden;
+  -webkit-mask-image: linear-gradient(#000 78%, transparent); mask-image: linear-gradient(#000 78%, transparent); }
+.mails li { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; grid-template-areas: "av von zeit" "av betreff betreff"; column-gap: 10px; row-gap: 2px; align-items: center;
+  padding: 8px 8px 8px 10px; border-bottom: 1px solid rgba(255,255,255,.05); font: 400 12px/1.3 var(--display); color: #A9A6C2; }
+.m-av { grid-area: av; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--c); color: #fff; font: 700 11px/1 var(--display); font-style: normal; }
+.m-von { grid-area: von; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #E6E4F2; font-size: 12.5px; }
+.mails time { grid-area: zeit; font-size: 11px; color: #8E8AA8; font-variant-numeric: tabular-nums; }
+.m-betreff { grid-area: betreff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mails li.ungelesen { background: rgba(127,133,245,.07); box-shadow: inset 3px 0 0 var(--teams); }
+.mails li.ungelesen .m-von { color: #fff; font-weight: 700; }
+.mails li.ungelesen .m-betreff { color: #B4B8FF; font-weight: 600; }
+.mails li.ungelesen time { color: #B4B8FF; }
+.mails li.neu { animation: mailein .35s ease-out; }
 @keyframes mailein { from { opacity: 0; transform: translateY(-8px); } }
-.mails b { font-weight: 600; color: var(--lilac); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mails span { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* schmales Fenster: nur die Liste */
+@container (max-width: 520px) {
+  .geraet[data-zustand="ruhe"] .win-leer, .geraet[data-zustand="ring"] .win-leer { grid-template-columns: minmax(0, 1fr); }
+  .mail-ordner { display: none; }
+  .mail-spalte { padding: 12px 12px 0; }
+}
 
 .win-kachel { display: none; position: relative; z-index: 2; justify-items: center; gap: 4px; text-align: center; }
 .geraet[data-zustand="talk"] .win-kachel, .geraet[data-zustand="ende"] .win-kachel { display: grid; animation: hochein .5s var(--ease); }
@@ -732,7 +757,9 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
   box-shadow: inset 0 0 0 1px var(--kante); color: var(--lilac); font-size: .92rem; line-height: 1.5; }
 .nk-beispiel .ico { color: var(--farbe); margin-top: 1px; }
 .nk-beispiel b { color: var(--text); font-weight: 700; }
-.nugget-nav { display: flex; align-items: center; gap: 14px; }
+/* Die Knöpfe kleben unten wie in der Phishing Challenge; ist die Karte höher als der Bildschirm, liegt ein Verlauf darunter */
+.nugget-nav { position: sticky; bottom: 0; z-index: 3; display: flex; align-items: center; gap: 14px; margin: -16px 0 -14px; padding: 18px 0 14px; }
+.screen-pause.ueberlauf .nugget-nav { background: linear-gradient(rgba(11, 6, 51, 0), rgba(11, 6, 51, .96) 45%); }
 .nugget-punkte { display: flex; gap: 6px; margin-right: auto; }
 .nugget-punkte button { width: 10px; height: 8px; border-radius: 99px; background: rgba(255, 255, 255, .2); transition: width .3s var(--ease), background .3s; }
 .nugget-punkte button.an { width: 26px; background: var(--mint); }
@@ -751,7 +778,7 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
    aergert = durchschaut (große Augen, Schweiß), gaehnt = langweilt sich (Augen halb zu, Mund auf). */
 .hacker { position: fixed; left: 0; top: 21%; z-index: 40; width: clamp(150px, 15vw, 236px); pointer-events: none; }
 .hacker-figur { position: relative; transform: translate3d(-125%, 0, 0) rotate(-26deg); transform-origin: 10% 85%; opacity: 0;
-  transition: transform .8s cubic-bezier(.5, 0, .75, 0), opacity 0s .8s; }   /* weg: sichtbar nach links hinaus, erst dann unsichtbar */
+  transition: transform .45s cubic-bezier(.55, 0, .85, .25), opacity 0s .45s; }   /* weg: zügig sichtbar nach links hinaus, erst dann unsichtbar */
 .hacker.da .hacker-figur { transform: translate3d(-40%, 0, 0) rotate(16deg); opacity: 1; transition: transform .9s cubic-bezier(.16, 1, .3, 1), opacity .2s; }
 .hacker-svg { width: 100%; height: auto; display: block; overflow: visible; filter: drop-shadow(0 20px 40px rgba(0, 0, 0, .65)); }
 .hacker-svg * { transform-box: fill-box; }
@@ -806,7 +833,7 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .hacker-blase { position: absolute; left: 74%; top: 3%; transform: rotate(-8deg) scale(0); transform-origin: 0 100%;
   transition: transform .45s cubic-bezier(.175, .885, .32, 1.275); }
 .hacker.da .hacker-blase { transform: rotate(-8deg) scale(1); transition-delay: .55s; }
-.hacker:not(.da) .hacker-blase { transition: transform 0s .8s; }   /* Blase fährt mit hinaus */
+.hacker:not(.da) .hacker-blase { transition: transform 0s .45s; }   /* Blase fährt mit hinaus */
 .hacker-blase span { display: block; width: max-content; max-width: min(340px, calc(100vw - 120px)); padding: 11px 18px; border-radius: 24px 24px 24px 6px; background: #0F0820; color: #fff;
   font-weight: 800; font-size: clamp(.95rem, .4vw + .75rem, 1.08rem); line-height: 1.35; border: 1.5px solid rgba(255, 0, 128, .75);
   box-shadow: 0 12px 30px -5px rgba(0, 0, 0, .8), 0 0 16px rgba(255, 0, 128, .35); }
@@ -948,8 +975,10 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
   .h-kopf { padding: 10px 12px; }
   .h-body p { padding: 0 14px 14px 54px; }
   .fb-aktionen { flex-direction: row-reverse; align-items: center; gap: 6px; padding-top: 12px; }
-  .fb-aktionen .btn { flex: 1; width: auto; min-height: 54px; padding: 0 18px; white-space: nowrap; }
-  .link-btn { padding: 8px 6px; font-size: .78rem; white-space: nowrap; }
+  /* Knopf und Link nebeneinander: der Link bricht um (zweizeilig, so schmal wie sein längstes Wort), damit der Knopf Platz hat;
+     wird der Knopftext lang (auch in anderen Sprachen), bricht auch er um */
+  .fb-aktionen .btn { flex: 1 1 auto; width: auto; min-height: 54px; padding: 6px 16px; text-wrap: balance; }
+  .link-btn { flex: 0 1 min-content; padding: 8px 6px; font-size: .78rem; line-height: 1.3; text-align: center; text-wrap: balance; }
   .link-btn.weg { display: none; }
   .hacker { width: 118px; top: 13%; }
   .hacker-blase span { font-size: .85rem; padding: 8px 13px; }

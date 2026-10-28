@@ -382,7 +382,7 @@ window.CONTENT = {
     beute: 'Hacker-Beute in diesem Level',
     beuteNull: 'Der Hacker ging leer aus.',
     details: 'Deine Anrufe',
-    warFake: 'KI-Fake',
+    warFake: 'Vishing',
     warEcht: 'Echt',
     zumTipp: 'Weiter zum Sicherheitstipp',
     naechstesLevel: 'Weiter zu Level {n}',
@@ -462,10 +462,10 @@ window.CONTENT = {
     titel: 'Auswertung',
     // fehler = höchstens so viele falsch erkannte Anrufe (der erste passende Rang gilt)
     raenge: [
-      { fehler: 0, titel: 'Deepfake-Detektiv:in', text: 'Alle Anrufe richtig erkannt. Dich legt so schnell keine KI rein.' },
+      { fehler: 0, titel: 'Vishing-Detektiv:in', text: 'Alle Anrufe richtig erkannt. Am Telefon legt dich so schnell niemand rein – auch keine geklonte Stimme.' },
       { fehler: 1, titel: 'Scharfes Gehör', text: 'Fast perfekt. Ein Anruf hat dich erwischt – schau dir an, welcher.' },
-      { fehler: 2, titel: 'Wachsam – mit Lücken', text: 'Du bist auf dem richtigen Weg. Achte noch mehr auf das Muster hinter den Anrufen.' },
-      { fehler: 99, titel: 'Leichte Beute', text: 'Die KI hatte heute leichtes Spiel. Aber jetzt kennst du ihre Tricks.' }
+      { fehler: 2, titel: 'Wachsam – mit Lücken', text: 'Du bist auf dem richtigen Weg. Achte noch mehr auf das Vishing-Muster: Zeitdruck, Geheimhaltung, eine ungewöhnliche Bitte.' },
+      { fehler: 99, titel: 'Leichte Beute', text: 'Die Betrüger am Telefon hatten heute leichtes Spiel. Aber jetzt kennst du ihre Vishing-Tricks.' }
     ],
     richtig: 'richtig erkannt',
     beuteNull: 'Der Hacker geht leer aus.',
@@ -474,9 +474,9 @@ window.CONTENT = {
     hackerMittel: 'Nicht schlecht. Aber einmal hab ich dich.',
     hackerSchlecht: 'Danke für die Spende! Bis zum nächsten Anruf …',
     akte: 'Deine Anrufe',
-    regelnTitel: 'Deine 4 Regeln gegen Vishing & Deepfakes',
+    regelnTitel: 'Deine 4 Regeln gegen Vishing',
     regeln: [
-      { titel: 'Stimme und Gesicht sind kein Beweis', text: 'Ein paar Sekunden Audio oder ein Foto reichen für einen überzeugenden Klon.' },
+      { titel: 'Stimme und Nummer sind kein Beweis', text: 'Ein kurzes Video reicht, um eine Stimme zu klonen. Und Nummer und Name im Display lassen sich fälschen.' },
       { titel: 'Erkenne das Muster', text: 'Zeitdruck + Geheimhaltung + ungewöhnliche Bitte: Geld, Codes, Zugangsdaten, Fernzugriff.' },
       { titel: 'Hak nach', text: 'Kontrollfrage, Ticketnummer, normaler Prozess. Betrüger weichen aus und machen Druck – echte Anrufer nicht.' },
       { titel: 'Auflegen & zurückrufen', text: 'Über eine Nummer, die du kennst. Und vereinbart ein Codewort – privat und im Team.' }
@@ -484,6 +484,6 @@ window.CONTENT = {
     nachgehakt: 'mal nachgehakt',
     nochmal: 'Nochmal spielen',
     kleingedruckt: 'Alle Stimmen und Bilder in dieser Challenge wurden mit KI erzeugt – auch die der echten Anrufer.',
-    quellen: 'Hintergrund: Lagebilder von Polizei und Verbraucherzentralen zu KI-Schockanrufen, Sicherheitsberichte zu Teams-Vishing (2026) sowie die bekannten Fälle eines britischen Energieversorgers (2019), Arup (2024) und Ferrari (2024).'
+    quellen: 'Hintergrund: Lagebilder von Polizei und Verbraucherzentralen zu Vishing und KI-Schockanrufen, Sicherheitsberichte zu Teams-Vishing (2026) sowie die bekannten Fälle eines britischen Energieversorgers (2019), Arup (2024) und Ferrari (2024).'
   }
 };
