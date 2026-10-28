@@ -278,12 +278,13 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 
 /* Gerät */
 .geraet-spalte { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; height: 100%; min-height: 0; }
-.geraet { position: relative; display: flex; align-items: center; justify-content: center; flex: 1 1 auto; width: 100%; min-height: 0; }
+.geraet { position: relative; display: flex; align-items: center; justify-content: center; flex: 1 1 auto; width: 100%; min-height: 0; container-type: size; }
 .geraet .win { display: none; }
 .geraet[data-art="teams"] .phone { display: none; }
 .geraet[data-art="teams"] .win { display: grid; }
 
-.phone { position: relative; height: min(700px, calc(100% - 26px)); aspect-ratio: 9 / 19; max-width: 100%; border-radius: 46px; padding: 0; overflow: hidden;
+/* Höhe auch an der Breite begrenzt – so bleibt das Telefon ein Telefon, statt schmal und lang zu werden */
+.phone { position: relative; height: min(700px, calc(100cqh - 26px), calc((100cqw - 12px) * 19 / 9)); aspect-ratio: 9 / 19; border-radius: 46px; padding: 0; overflow: hidden;
   background: radial-gradient(120% 60% at 50% 0%, #2B1C72 0%, #150D3E 55%, #0A0626 100%);
   box-shadow: 0 0 0 9px #17132E, 0 0 0 10px #4A4080, 0 0 0 11px #120E26, 0 40px 80px -30px rgba(0,0,0,.85), 0 0 90px -24px rgba(108,75,232,.55);
   display: grid; grid-template-rows: auto 1fr auto; transition: transform .5s var(--ease); }
@@ -463,8 +464,9 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .cc-du { justify-items: end; text-align: right; }
 .cc-du .cc-wer { color: var(--lilac); }
 .cc-du p { padding: 10px 14px; border-radius: 14px 14px 4px 14px; background: rgba(108,75,232,.32); max-width: 92%; font-size: 15px; }
-.ohne-cc .cc-anrufer p { display: none; }
-.ohne-cc .cc-anrufer .cc-wer::after { content: " spricht …"; color: var(--lilac); text-transform: none; letter-spacing: 0; }
+.ohne-cc .dialog .cc-log { display: none; }
+.ohne-cc .dialog .cc-kopf { margin-bottom: 0; }
+.ohne-cc .dialog .cc { flex: none; min-height: 0; padding-block: 10px; }
 
 .wahl { display: grid; gap: 10px; }
 .wahl-label { margin: 0; font: 600 11px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--aqua); }
@@ -477,15 +479,13 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 
 /* Urteil im Panel – zwei große Pillen wie die Antwortknöpfe der Serie */
 .urteil { display: grid; gap: 10px; padding: 18px; border-radius: 22px; text-align: center; animation: einblenden .45s var(--ease) both; }
-.urteil-sub { font-size: .72rem; font-weight: 850; letter-spacing: .15em; text-transform: uppercase; color: var(--text-3); }
-.urteil-frage { font-size: clamp(1.5rem, 2vw, 2rem); font-weight: 900; letter-spacing: -.025em; }
+.urteil-frage { font-size: clamp(1.3rem, 1.6vw, 1.7rem); font-weight: 900; letter-spacing: -.02em; text-wrap: balance; }
 .urteil-tasten { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
 .urteil-btn { position: relative; display: grid; justify-items: center; gap: 4px; padding: 16px 10px 14px; border-radius: 20px;
   transition: transform .2s var(--sprung), box-shadow .25s, opacity .3s, filter .2s; animation: popEin .5s var(--sprung) both; }
 .urteil-btn.fake { animation-delay: .08s; }
 .urteil-btn .ico { width: 30px; height: 30px; stroke-width: 2.2; }
-.urteil-btn b { font-size: 1.25rem; font-weight: 900; letter-spacing: .02em; }
-.urteil-btn span { font-size: .78rem; font-weight: 650; opacity: .8; line-height: 1.3; }
+.urteil-btn b { font-size: 1.3rem; font-weight: 900; letter-spacing: .04em; }
 .urteil-btn kbd { position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, .12); color: inherit; opacity: .7; }
 .urteil-btn.echt { background: var(--mint); color: #00261C; box-shadow: 0 14px 34px -12px rgba(23, 255, 192, .7), inset 0 -3px 0 rgba(0, 0, 0, .12); }
 .urteil-btn.fake { background: var(--koralle); color: #3A0400; box-shadow: 0 14px 34px -12px rgba(255, 130, 120, .7), inset 0 -3px 0 rgba(0, 0, 0, .12); }
@@ -753,7 +753,7 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .dialog { display: flex; flex-direction: column; gap: 12px; align-content: stretch; min-height: 0; }
 .cc { flex: 1 1 0; max-height: none; min-height: 110px; padding: 16px 18px; }
 .wahl, .urteil { flex: none; }
-.win { width: min(100%, 900px); }
+.win { width: min(100%, 900px, calc(100cqh * 16 / 10.5)); }
 
 /* ================= Hacker (wie in der Phishing Challenge) =================
    Lugt schräg von links ins Bild. freut = hat gewonnen (zwinkert, Funkeln, lacht),
@@ -832,24 +832,37 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 @keyframes hinweisNachLinks { to { opacity: 0; transform: translateX(-56px); } }
 @keyframes hinweisNachRechts { to { opacity: 0; transform: translateX(56px); } }
 
-/* ================= Transkript links beim Gerät =================
-   Entwurf b: immer; Entwurf a: erst beim Feedback. Telefon und Gesprächsverlauf stehen nebeneinander,
-   bei Teams (breit) steht der Verlauf unter dem Fenster. Beim Feedback zeigt der Verlauf alles
-   (auch ohne Live-Untertitel) und markiert die Stelle zum aktiven Hinweis. */
+/* ================= Transkript links beim Gerät (Feedback, ab „Details anzeigen“) =================
+   Im Gespräch steht das Transkript rechts über den Antworten. Bei „Details anzeigen“ rückt das Telefon
+   nach links und der Gesprächsverlauf steht daneben; bei Teams (breit) rückt das Fenster nach oben und
+   der Verlauf steht darunter. Er zeigt alles (auch ohne Live-Untertitel) und markiert die Stelle zum
+   aktiven Hinweis; ein Klick auf eine markierte Stelle öffnet ihren Hinweis. */
 .geraet-spalte.mit-transkript { flex-direction: row; align-items: center; gap: clamp(14px, 1.6vw, 26px); }
-.mit-transkript .geraet { flex: 0 0 auto; width: auto; height: 100%; }
+.mit-transkript .geraet { flex: 0 0 auto; width: auto; height: 100%; container-type: normal; }
 .mit-transkript .phone { height: min(680px, calc(100dvh - var(--hud-h) - 80px)); }
-.mit-transkript .cc { flex: 1 1 0; max-width: 440px; min-width: 240px; height: min(620px, 100%); animation: hochein .5s var(--ease); }
+.mit-transkript .cc { flex: 1 1 0; max-width: 440px; min-width: 240px; height: min(620px, 100%); }
 .mit-transkript .ablehnen-tipp { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: max-content; max-width: 100%; }
 .mit-transkript:has(.geraet[data-art="teams"]) { flex-direction: column; }
-.mit-transkript:has(.geraet[data-art="teams"]) .geraet { flex: 1 1 0; min-height: 0; width: 100%; height: auto; }
+.mit-transkript:has(.geraet[data-art="teams"]) .geraet { flex: 1 1 0; min-height: 0; width: 100%; height: auto; container-type: size; }
 .mit-transkript:has(.geraet[data-art="teams"]) .cc { flex: 0 0 auto; width: min(100%, 900px); max-width: none; height: 32%; min-height: 150px; }
 .geraet.spricht ~ .cc .cc-punkt { background: var(--rot); animation: blink 1s steps(2) infinite; }
 .cc-titel { display: none; font: 700 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--text-2); padding: 7px 0; }
 #s-spiel[data-phase="feedback"] .cc-titel { display: inline; }
 #s-spiel[data-phase="feedback"] .cc-schalter, #s-spiel[data-phase="feedback"] .cc-nochmal { display: none; }
-#s-spiel[data-phase="feedback"] .cc-anrufer p { display: block; }
-#s-spiel[data-phase="feedback"] .cc-wer::after { content: none; }
+#s-spiel[data-fb-stufe="2"] .cc-mark { cursor: pointer; }
+#s-spiel[data-fb-stufe="2"] .cc-mark:hover { background: color-mix(in srgb, var(--c) 18%, transparent); }
+/* im Feedback ist das Gerät nicht mehr abgedunkelt; was ein Hinweis am Gerät meint, leuchtet mit auf */
+#s-spiel[data-fb-stufe="2"] .geraet[data-zustand="ende"] .phone, #s-spiel[data-fb-stufe="2"] .geraet[data-zustand="ende"] .win { filter: none; }
+.ziel-aktiv { --c: #FF6B81; outline: 2px solid var(--c); outline-offset: 4px; box-shadow: 0 0 24px -2px var(--c); animation: zielPuls 1.6s ease-in-out infinite; }
+.ziel-aktiv:not(.ph-avatar) { border-radius: 8px; }
+.ziel-aktiv.m-gruen { --c: var(--mint); }
+.ziel-aktiv.m-info { --c: #AE9BFF; }
+@keyframes zielPuls { 50% { outline-offset: 7px; } }
+/* mittelgroße Fenster: neben Telefon und Panel ist kein Platz – dann steht nur der Verlauf links */
+@media (min-width: 960px) and (max-width: 1099px) and (min-height: 541px) {
+  #s-spiel[data-fb-stufe="2"] .geraet { display: none; }
+  #s-spiel[data-fb-stufe="2"] .mit-transkript .cc { flex: 0 1 auto; width: 100%; max-width: 600px; height: min(620px, 100%); }
+}
 .cc-mark { --c: #FF6B81; color: inherit; background: none; border-radius: 5px; padding: 1px 3px; margin: 0 -3px; -webkit-box-decoration-break: clone; box-decoration-break: clone;
   box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--c) 65%, transparent); transition: background .3s, box-shadow .3s; }
 .cc-mark.m-gruen { --c: var(--mint); }
@@ -857,7 +870,7 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .cc-mark.aktiv { background: color-mix(in srgb, var(--c) 30%, transparent); box-shadow: 0 0 0 2px var(--c), 0 0 22px -4px var(--c); }
 
 /* ================= Schmal: alles untereinander (Lage – Gerät – Gespräch) ================= */
-@media (max-width: 959px) {
+@media (max-width: 959px), (max-height: 540px) {
   .screen-spiel { overflow-y: auto; }
   .buehne { height: auto; min-height: 100%; display: flex; flex-direction: column; align-items: stretch; gap: 12px; padding: 4px 14px 24px; }
   .lage { order: 1; padding: 14px 16px; gap: 6px; }
@@ -877,11 +890,14 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
   .cc-log { max-height: 40vh; }
   /* Transkript beim Gerät: untereinander; beim Feedback steht der Verlauf statt des Geräts über dem Panel */
   .geraet-spalte.mit-transkript, .mit-transkript:has(.geraet[data-art="teams"]) { flex-direction: column; align-items: stretch; }
-  .mit-transkript .geraet, .mit-transkript:has(.geraet[data-art="teams"]) .geraet { flex: none; width: 100%; height: auto; }
+  .geraet, .mit-transkript .geraet, .mit-transkript:has(.geraet[data-art="teams"]) .geraet { flex: none; width: 100%; height: auto; container-type: normal; }
+  .phone { max-width: 100%; }
+  .win { width: min(100%, 780px); }
   .mit-transkript .phone { height: min(620px, 72vh); }
   .mit-transkript .cc, .mit-transkript:has(.geraet[data-art="teams"]) .cc { flex: none; width: 100%; max-width: none; height: auto; min-height: 120px; }
-  #s-spiel[data-phase="feedback"] .geraet { display: none; }
-  #s-spiel[data-phase="feedback"] .cc-log { max-height: 34vh; }
+  #s-spiel[data-fb-stufe="1"] .geraet-spalte { display: none; }
+  #s-spiel[data-fb-stufe="2"] .geraet { display: none; }
+  #s-spiel[data-fb-stufe="2"] .cc-log { max-height: 34vh; }
   /* Feedback: das Panel füllt den Bildschirm, der Knopf klebt unten */
   .fb { order: 4; flex: 1 0 auto; overflow: visible; width: 100%; max-width: 680px; align-self: center; }
   .h-liste { position: relative; }
@@ -928,6 +944,7 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
   .nk-bild { order: -1; }
   .urteil-btn kbd { display: none; }
   .mit-transkript .phone { height: auto; }
+  #s-spiel[data-fb-stufe="1"] .geraet-spalte { display: flex; }   /* das kompakte Telefon bleibt in Schritt 1 als Kontext */
   /* Feedback: in Schritt 2 nur noch Ergebnis und Hinweise */
   .fb { --pad: 16px; border-radius: 24px; }
   .fb-ikon { width: 44px; height: 44px; }
@@ -1142,16 +1159,15 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
         </div>
         <!-- Urteil im Panel, wie die Antwortknöpfe der Serie -->
         <div class="urteil karte" id="urteil" hidden>
-          <p class="urteil-sub" id="urteil-sub"></p>
           <h2 class="urteil-frage" id="urteil-frage"></h2>
           <div class="urteil-tasten">
             <button class="urteil-btn echt" id="urteil-echt" type="button">
               <svg class="ico" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m8.6 12 2.4 2.4 4.4-4.9"/></svg>
-              <b></b><span></span><kbd>←</kbd>
+              <b></b><kbd>←</kbd>
             </button>
             <button class="urteil-btn fake" id="urteil-fake" type="button">
               <svg class="ico" viewBox="0 0 24 24"><path d="M6.6 3.2 8.8 5c.4.3.5.9.3 1.4L8 8.8a12 12 0 0 0 7.2 7.2l2.4-1.1c.5-.2 1-.1 1.4.3l1.8 2.2c.4.5.3 1.2-.2 1.6l-1.6 1.3c-.9.7-2.1.9-3.1.5A18.4 18.4 0 0 1 3.2 8.2c-.4-1-.2-2.2.5-3.1L5 3.4c.4-.5 1.1-.6 1.6-.2z"/><path d="M17.5 2.5v4.6M17.5 10h.01"/></svg>
-              <b></b><span></span><kbd>→</kbd>
+              <b></b><kbd>→</kbd>
             </button>
           </div>
         </div>
@@ -1328,10 +1344,9 @@ window.CONTENT = {
   },
 
   urteil: {
-    frage: 'Echt oder Fake?',
-    sub: 'Was steckt hinter diesem Anruf?',
-    echt: { titel: 'ECHT', text: 'Ein echter Anruf mit echtem Anliegen' },
-    fake: { titel: 'FAKE', text: 'Vishing – auflegen & prüfen' }
+    frage: 'Was steckt hinter diesem Anruf?',
+    echt: 'ECHT',
+    fake: 'VISHING'
   },
 
   /* Feedback im Panel wie in der Phishing Challenge: titel (Ergebnis), text (allgemeine Rückmeldung;
@@ -1368,7 +1383,8 @@ window.CONTENT = {
   /* ---------------- die sechs Anrufe (Reihenfolge = Spielreihenfolge; Level siehe unten) ----------------
      signale: nach Wichtigkeit sortiert. Im Feedback erscheinen die ersten drei, die zum Gesprächsverlauf passen
      (wenn = nur nach dieser Antwort, wennNicht = nur ohne sie), danach „Das schützt dich“ (tipp).
-     zitat: Stelle(n) im Gespräch, die beim Hinweis im Transkript aufleuchten – exakt wie im Untertitel. */
+     zitat: Stelle(n) im Gespräch, die beim Hinweis im Transkript aufleuchten – exakt wie im Untertitel.
+     geraet: was am Gerät mit aufleuchtet – anrufer (Nummer/Name), extern („Extern“ bei Teams), namensschild (Teams). */
   anrufe: [
     {
       id: 'c1',
@@ -1399,7 +1415,7 @@ window.CONTENT = {
         ]
       ],
       signale: [
-        { art: 'rot', titel: 'Unbekannte Nummer, „Handy weg“', zitat: 'Mein Handy ist weg', text: 'Der klassische Einstieg beim Schockanruf: So erklärt der Betrüger, warum er nicht von Jonas’ Nummer anruft.' },
+        { art: 'rot', titel: 'Unbekannte Nummer, „Handy weg“', geraet: 'anrufer', zitat: 'Mein Handy ist weg', text: 'Der klassische Einstieg beim Schockanruf: So erklärt der Betrüger, warum er nicht von Jonas’ Nummer anruft.' },
         { art: 'rot', titel: 'Panik – und Geld sofort', zitat: ['sonst nehmen die mich mit', 'achthundert Euro Kaution', 'Echtzeitüberweisung'], text: '„Jetzt gleich“, „sonst nehmen die mich mit“ – Panik soll verhindern, dass du nachdenkst. Und keine Polizei kassiert Kaution per Überweisung auf ein Konto, das dir am Telefon genannt wird.' },
         { art: 'rot', titel: 'Kein Rückruf erlaubt', zitat: 'da erreichst du mich nicht', text: 'Wer wirklich in Not ist, hat nichts gegen einen Rückruf über einen bekannten Weg – oder über seine Freunde vor Ort.', wenn: 'c1_2b' },
         { art: 'rot', titel: 'Weicht der Kontrollfrage aus', zitat: 'du willst ein Quiz machen', text: 'Statt zu antworten, macht er mehr Druck. Echte Angehörige kennen Omas Katze.', wenn: 'c1_1b' },
@@ -1443,7 +1459,7 @@ window.CONTENT = {
         ]
       ],
       signale: [
-        { art: 'rot', titel: '„Extern“ im Teams-Anruf', text: 'Deine IT ruft aus dem eigenen Unternehmen an – nicht von einem fremden Konto wie „…onmicrosoft.com“. Seit 2026 warnt Teams manchmal bei solchen Anrufen; fehlt die Warnung, ist der Anruf trotzdem nicht geprüft.' },
+        { art: 'rot', titel: '„Extern“ im Teams-Anruf', geraet: 'extern', text: 'Deine IT ruft aus dem eigenen Unternehmen an – nicht von einem fremden Konto wie „…onmicrosoft.com“. Seit 2026 warnt Teams manchmal bei solchen Anrufen; fehlt die Warnung, ist der Anruf trotzdem nicht geprüft.' },
         { art: 'rot', titel: 'Erst Spam, dann der „Retter“', zitat: 'mit Spam regelrecht bombardiert', text: 'Die Spam-Flut war kein Zufall: Angreifer lösen sie selbst aus, um danach als Helfer anzurufen. Diese Masche läuft 2026 gezielt gegen Unternehmen.' },
         { art: 'rot', titel: 'Rückruf wird schlechtgeredet', zitat: 'Die Hotline ist gerade komplett überlastet', text: 'Echter Support hat kein Problem damit, dass du die offizielle Hotline wählst. „Hotline überlastet“ und „Konto gesperrt“ sollen dich davon abhalten.', wenn: 'c3_2b' },
         { art: 'rot', titel: 'Kein Ticket, aber Druck', zitat: 'Je länger wir warten, desto größer das Risiko', text: 'Ein Ticket gibt es nicht – dafür Zeitdruck statt Prozess.', wenn: 'c3_1b' },
@@ -1491,7 +1507,7 @@ window.CONTENT = {
         { art: 'gruen', titel: 'PIN und TAN tabu', zitat: 'PIN und TAN fragen wir niemals ab', text: 'Auf deine Frage kam sofort: niemals am Telefon. Ein Betrüger hätte zugegriffen.', wenn: 'c2_2a' },
         { art: 'gruen', titel: 'Rückruf ausdrücklich erwünscht', zitat: 'über die Nummer auf der Rückseite Ihrer Karte', text: 'Sie bietet von sich aus an, dass du über die offizielle Nummer zurückrufst.', wenn: 'c2_1b' },
         { art: 'gruen', titel: 'Sie verlangt nichts', zitat: 'die PIN kommt wie immer separat per Post', text: 'Keine PIN, keine TAN, keine Freigabe in der App, kein Geld, kein „sofort“. Sie gibt nur Informationen – in ruhigem Ton.' },
-        { art: 'info', titel: 'Die Nummer beweist nichts', text: 'Callcenter rufen oft von Sammelnummern an – eine fremde Nummer macht noch keinen Fake. Umgekehrt lässt sich auch eine bekannte Nummer fälschen (Call-ID-Spoofing).' }
+        { art: 'info', titel: 'Die Nummer beweist nichts', geraet: 'anrufer', text: 'Callcenter rufen oft von Sammelnummern an – eine fremde Nummer macht noch keinen Fake. Umgekehrt lässt sich auch eine bekannte Nummer fälschen (Call-ID-Spoofing).' }
       ],
       kern: 'Du hast den Rückruf selbst angefordert – und sie wollte nichts von dir. Eine fremde Nummer allein macht noch keinen Fake.',
       tipp: 'Echte Bankmitarbeitende fragen nie nach PIN, TAN oder Freigaben in der App. Im Zweifel: auflegen und die Nummer von der Kartenrückseite wählen.',
@@ -1529,7 +1545,7 @@ window.CONTENT = {
         ]
       ],
       signale: [
-        { art: 'gruen', titel: 'Interner Kontakt', text: 'Kein „Extern“-Hinweis, bekannter Name, bekanntes Profil im Firmen-Teams.' },
+        { art: 'gruen', titel: 'Interner Kontakt', geraet: 'namensschild', text: 'Kein „Extern“-Hinweis, bekannter Name, bekanntes Profil im Firmen-Teams.' },
         { art: 'gruen', titel: 'Der normale Weg', zitat: 'in unseren Team-Ordner', text: 'Sie will die Datei im gemeinsamen Team-Ordner – nicht an eine private Mailadresse.' },
         { art: 'gruen', titel: 'Kein Druck, keine Geheimnisse', zitat: 'kein Stress', text: 'Nachfragen und Rückruf sind für sie völlig okay.', wenn: 'c4_2a' },
         { art: 'gruen', titel: 'Der Anlass passt', zitat: ['Präsentation für morgen', 'im Weekly besprochen'], text: 'Ihr habt im Weekly darüber gesprochen, die Präsentation ist morgen. Keine Eile, kein „sag niemandem was“.' }
@@ -1577,7 +1593,7 @@ window.CONTENT = {
       ],
       signale: [
         { art: 'gruen', titel: 'Dein eigenes Ticket', zitat: 'wegen Ihres Tickets von heute Morgen', text: 'Anlass und Zeitpunkt passen genau zu dem Problem, das du heute Morgen selbst gemeldet hast.' },
-        { art: 'gruen', titel: 'Gleicher Kanal – aber intern', text: 'Auch der falsche Helpdesk rief über Teams an. Hier fehlt das „Extern“: Er ruft aus dem Firmen-Teams an, mit Namen und Abteilung.' },
+        { art: 'gruen', titel: 'Gleicher Kanal – aber intern', geraet: 'namensschild', text: 'Auch der falsche Helpdesk rief über Teams an. Hier fehlt das „Extern“: Er ruft aus dem Firmen-Teams an, mit Namen und Abteilung.' },
         { art: 'gruen', titel: 'Passwort tabu', zitat: 'Ihr Passwort brauchen wir nie', text: 'Auf deine Frage kam sofort: niemals. Ein Betrüger hätte zugegriffen.', wenn: 'c7_2a' },
         { art: 'gruen', titel: 'Rückruf erwünscht', zitat: 'Die Nummer der Hotline steht im Intranet', text: 'Er verweist auf die Hotline aus dem Intranet – nicht auf eine Nummer, die er dir selbst nennt.', wenn: 'c7_2b' },
         { art: 'gruen', titel: 'Ticketnummer stimmt', zitat: 'Im IT-Portal steht auch mein Name', text: 'Er nennt Nummer, Uhrzeit und Problem – und verweist aufs Portal, wo du alles selbst prüfen kannst.', wenn: 'c7_1b' },
@@ -1619,7 +1635,7 @@ window.CONTENT = {
         ]
       ],
       signale: [
-        { art: 'rot', titel: 'Fremde Nummer, vertraute Stimme', zitat: 'vom privaten Handy', text: 'Ein Profilfoto kann jeder hochladen. Und Townhall-Videos liefern genug Material für einen Stimmklon.' },
+        { art: 'rot', titel: 'Fremde Nummer, vertraute Stimme', geraet: 'anrufer', zitat: 'vom privaten Handy', text: 'Ein Profilfoto kann jeder hochladen. Und Townhall-Videos liefern genug Material für einen Stimmklon.' },
         { art: 'rot', titel: 'Geheim, eilig, am Prozess vorbei', zitat: ['Das darf noch niemand wissen', 'nicht über die normale Freigabe', 'Eilüberweisung'], text: '„Das darf niemand wissen“, „heute noch“, „nicht über die normale Freigabe“ – die Chefin persönlich macht Druck, damit niemand gegenprüft.' },
         { art: 'rot', titel: 'Kontrollfrage? Leitung tot.', zitat: 'Was soll das denn jetzt', text: 'Statt einer Antwort kam Ärger – und dann brach die Verbindung ab. Wer eine einfache Frage zum gemeinsamen Alltag nicht beantworten kann, ist nicht die, die sie vorgibt zu sein.', wenn: 'c5_2b' },
         { art: 'rot', titel: 'Rückruf abgeblockt', zitat: 'Dafür ist jetzt wirklich keine Zeit', text: 'Ein Rückruf über die Büronummer dauert eine Minute. Wer ihn mit Zeitdruck abblockt, will genau diese Prüfung verhindern.', wenn: 'c5_1b' },
@@ -2230,6 +2246,9 @@ window.Feier = (function () {
   const warte = ms => new Promise(r => setTimeout(r, ms));
   const reduziert = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  // schmale oder sehr niedrige Fenster: alles untereinander (dieselbe Grenze wie im CSS)
+  const SCHMAL = matchMedia('(max-width: 959px), (max-height: 540px)');
+  const schmal = () => SCHMAL.matches;
 
   const S = {
     i: 0, level: 0, ergebnisse: [], beute: 0, pause: null, pauseFertig: false,
@@ -2378,7 +2397,8 @@ window.Feier = (function () {
         t2 = setTimeout(() => ({ freut: K.fx.hackerHaha, aergert: K.fx.hackerGrr, gaehnt: K.fx.hackerGaehn }[stimmung])(), 650);
         t = setTimeout(() => el.classList.remove('da'), Math.min(6500, 2600 + text.length * 40));   // lange Sätze bleiben länger
       },
-      weg() { clearTimeout(t); clearTimeout(t2); el.classList.remove('da'); }
+      weg() { clearTimeout(t); clearTimeout(t2); el.classList.remove('da'); },
+      da: () => el.classList.contains('da')
     };
   })();
 
@@ -2598,6 +2618,7 @@ window.Feier = (function () {
   }
   // Klick auf die Beute: der Hacker fliegt herein und sagt, was er von seiner Kasse hält
   $('hud-beute').addEventListener('click', () => {
+    if (hacker.da()) { hacker.weg(); K.fx.klick(); return; }   // ist er schon da, geht er wieder; erst der nächste Klick holt ihn mit neuem Satz
     const b = S.beute, gestartet = S.ergebnisse.some(Boolean);
     const stufe = !gestartet ? 'vorStart' : !b ? 'leer' : b <= 1000 ? 'klein' : b <= 100000 ? 'mittel' : 'gross';
     K.fx.klick();
@@ -2636,7 +2657,8 @@ window.Feier = (function () {
     S.lauf = { pfad: [], zuege: [], runde: 0, aufgelegt: false, beendet: false, verlauf: [] };
     if (app.dataset.screen !== 's-spiel') zeige('s-spiel');
     hudAktualisieren();
-    $('urteil').hidden = true; $('feedback').hidden = true; delete $('s-spiel').dataset.phase;
+    $('urteil').hidden = true; $('feedback').hidden = true; delete $('s-spiel').dataset.phase; delete $('s-spiel').dataset.fbStufe;
+    transkriptLinks(false);
     $('wahl').hidden = true; $('cc-nochmal').hidden = true;
     $('cc-log').innerHTML = '<p class="cc-leer">Noch kein Gespräch.</p>';
     $('ablehnen-tipp').hidden = true; $('geraet-ende').hidden = true;
@@ -2738,7 +2760,7 @@ window.Feier = (function () {
     $('ablehnen-tipp').hidden = true;
     $('cc-log').innerHTML = '';
     // Beim Klingeln bleibt die Lage offen (zum Fertiglesen); erst beim Abheben klappt sie ein – dort, wo sie über dem Gerät steht
-    if (innerWidth < 960) { $('lage').classList.add('zu'); $('lage-toggle').setAttribute('aria-expanded', 'false'); }
+    if (schmal()) { $('lage').classList.add('zu'); $('lage-toggle').setAttribute('aria-expanded', 'false'); }
     timerStart = performance.now();
     clearInterval(timerId);
     timerId = setInterval(() => {
@@ -2762,14 +2784,22 @@ window.Feier = (function () {
   $('ph-auflegen').addEventListener('click', () => beenden('aufgelegt'));
   $('win-auflegen').addEventListener('click', () => beenden('aufgelegt'));
 
-  /* ---------- Transkript: links neben dem Gerät (wie die Live-Untertitel des Telefons bzw. von Teams) ----------
-     Es bleibt beim Feedback stehen; die Hinweise markieren dort ihre Stelle im Gespräch. */
+  /* ---------- Transkript: im Gespräch rechts über den Antworten, bei „Details anzeigen“ links beim Gerät ----------
+     Das Telefon rückt nach links (Teams nach oben) und macht Platz; die Hinweise markieren ihre Stelle im Gespräch. */
   function transkriptLinks(links) {
     const cc = $('cc'), spalte = geraet.parentElement;
+    if (links === spalte.classList.contains('mit-transkript')) return;
+    const dev = geraet.querySelector(geraet.dataset.art === 'teams' ? '.win' : '.phone'), vorher = dev.getBoundingClientRect();
     if (links) geraet.after(cc); else $('dialog').prepend(cc);
     spalte.classList.toggle('mit-transkript', links);
+    if (!links || reduziert) return;
+    // Gerät gleitet an seinen neuen Platz, das Transkript schiebt sich daneben
+    const nachher = dev.getBoundingClientRect();
+    if (vorher.width && nachher.width) dev.animate([
+      { transform: `translate(${vorher.left - nachher.left}px, ${vorher.top - nachher.top}px) scale(${vorher.width / nachher.width})`, transformOrigin: 'top left' },
+      { transform: 'none', transformOrigin: 'top left' }], { duration: 550, easing: 'cubic-bezier(.2, .8, .2, 1)' });
+    cc.animate([{ opacity: 0, transform: 'translateX(40px)' }, { opacity: 1, transform: 'none' }], { duration: 450, delay: 150, easing: 'ease-out', fill: 'backwards' });
   }
-  transkriptLinks(true);
 
   // Feedback: der ganze Gesprächsverlauf, die Stellen zu den Hinweisen markiert (wie das Spotlight in der Phishing Challenge)
   function transkriptZeigen(liste) {
@@ -2778,20 +2808,33 @@ window.Feier = (function () {
       let html = esc(z.text);
       liste.forEach((h, k) => [].concat(h.zitat || []).forEach(q => {
         const such = esc(q), i = html.toLowerCase().indexOf(such.toLowerCase());
-        if (i >= 0) html = html.slice(0, i) + `<mark class="cc-mark m-${h.art}" data-h="${k}">${html.slice(i, i + such.length)}</mark>` + html.slice(i + such.length);
+        if (i >= 0) html = html.slice(0, i) + `<mark class="cc-mark m-${h.art}" data-h="${k}" role="button" tabindex="0">${html.slice(i, i + such.length)}</mark>` + html.slice(i + such.length);
       }));
       return `<div class="cc-zeile cc-${z.art}"><span class="cc-wer">${esc(z.wer)}</span><p>${html}</p></div>`;
     }).join('') || '<p class="cc-leer">Noch kein Gespräch.</p>';
     log.scrollTop = 0;
   }
+  // Stellen am Gerät, auf die ein Hinweis zeigen kann (signale[].geraet); sie leuchten im Feedback mit auf
+  const GERAET_ZIEL = { anrufer: '#ph-name, #ph-avatar, .win-namensschild', extern: '#win-extern', namensschild: '.win-namensschild' };
   function transkriptMarke(i) {
-    const log = $('cc-log');
+    const log = $('cc-log'), h = FB && FB.liste[i];
+    geraet.querySelectorAll('.ziel-aktiv').forEach(z => z.classList.remove('ziel-aktiv', 'm-rot', 'm-gruen', 'm-info'));
+    if (h && h.geraet) geraet.querySelectorAll(GERAET_ZIEL[h.geraet]).forEach(z => z.classList.add('ziel-aktiv', 'm-' + h.art));
     log.querySelectorAll('.cc-mark').forEach(m => m.classList.toggle('aktiv', +m.dataset.h === i));
     const m = log.querySelector(`.cc-mark[data-h="${i}"]`);
     if (!m) return;
     const lr = log.getBoundingClientRect(), mr = m.getBoundingClientRect();
     log.scrollTo({ top: Math.max(0, log.scrollTop + mr.top - lr.top - lr.height / 3), behavior: reduziert ? 'auto' : 'smooth' });
   }
+
+  const markeKlick = e => {
+    const m = e.target.closest('.cc-mark');
+    if (!m || !FB || FB.stufe !== 2) return;
+    if (e.type === 'keydown') { if (e.key !== 'Enter' && e.key !== ' ') return; e.preventDefault(); }
+    K.fx.klick(); hinweis(+m.dataset.h);
+  };
+  $('cc-log').addEventListener('click', markeKlick);
+  $('cc-log').addEventListener('keydown', markeKlick);
 
   /* ---------- Untertitel ---------- */
   let ccZeile = null, ccWoerter = [], ccRaf = null, ccQuelle = null;
@@ -2841,7 +2884,8 @@ window.Feier = (function () {
       ccFertig();
       // Die Leitung reißt ab (die falsche Chefin bei der Kontrollfrage)
       if (zeile.glitch) { K.fx.glitch(0.45); setTimeout(() => { if (ep === S.epoche) beenden('verbindung'); }, 900); return; }
-      setTimeout(() => { if (ep === S.epoche && !S.lauf.beendet) danach(); }, 380);
+      const letzte = S.lauf.runde >= a.runden.length;   // danach wird aufgelegt – nicht lange warten
+      setTimeout(() => { if (ep === S.epoche && !S.lauf.beendet) danach(); }, letzte ? 120 : 380);
     };
     await K.stimme(zeile.id, a.klang, fertig);
     if (ep !== S.epoche) { K.stimmeStop(); return; }
@@ -2861,7 +2905,7 @@ window.Feier = (function () {
       `<button class="option" type="button" data-i="${i}" style="--i:${i}"><kbd>${i + 1}</kbd><span>${esc(o.text)}</span></button>`).join('');
     w.hidden = false;
     w.classList.remove('rein'); void w.offsetWidth; w.classList.add('rein');
-    if (innerWidth < 960) setTimeout(() => scrollZu($('s-spiel'), w), 60);
+    if (schmal()) setTimeout(() => scrollZu($('s-spiel'), w), 60);
     $('cc-nochmal').hidden = false;
     w.querySelectorAll('.option').forEach(b => {
       b.addEventListener('click', () => waehlen(+b.dataset.i));
@@ -2900,7 +2944,7 @@ window.Feier = (function () {
     const ende = $('geraet-ende');
     ende.textContent = grund === 'verbindung' ? C.telefon.verbindungWeg : C.telefon.beendet; ende.hidden = false;
     setZustand('ende');
-    await warte(1500);
+    await warte(900);
     if (ep === S.epoche) urteilZeigen();
   }
 
@@ -2938,14 +2982,12 @@ window.Feier = (function () {
   function urteilZeigen() {
     const U = C.urteil, u = $('urteil');
     $('urteil-frage').textContent = U.frage;
-    $('urteil-sub').textContent = U.sub;
     const e = $('urteil-echt'), f = $('urteil-fake');
-    e.querySelector('b').textContent = U.echt.titel; e.querySelector('span').textContent = U.echt.text;
-    f.querySelector('b').textContent = U.fake.titel; f.querySelector('span').textContent = U.fake.text;
+    e.querySelector('b').textContent = U.echt; f.querySelector('b').textContent = U.fake;
     [e, f].forEach(b => b.classList.remove('gewaehlt', 'abgewaehlt'));
     u.classList.remove('entschieden');
     u.hidden = false;
-    if (innerWidth < 960) setTimeout(() => scrollZu($('s-spiel'), u), 60);
+    if (schmal()) setTimeout(() => scrollZu($('s-spiel'), u), 60);
     K.fx.bass();
     K.musik('intro', 0.14, 2);
   }
@@ -2985,7 +3027,6 @@ window.Feier = (function () {
     schutz: '<svg class="ico" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m8.6 12 2.4 2.4 4.4-4.9"/></svg>'
   };
   const CHEVRON = '<svg class="ico h-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>';
-  const schmal = () => innerWidth < 960;
   let FB = null;
 
   function feedbackZeigen(erg, kasseVorher) {
@@ -3005,7 +3046,7 @@ window.Feier = (function () {
 
     // Hinweise: die ersten drei Signale, die zum Gesprächsverlauf passen, zum Schluss „Das schützt dich“ – höchstens vier Schritte
     const liste = a.signale.filter(s => (!s.wenn || erg.pfad.includes(s.wenn)) && (!s.wennNicht || !erg.pfad.includes(s.wennNicht))).slice(0, 3)
-      .map(s => ({ art: s.art, label: F.art[s.art], titel: s.titel, text: s.text, zitat: s.zitat }))
+      .map(s => ({ art: s.art, label: F.art[s.art], titel: s.titel, text: s.text, zitat: s.zitat, geraet: s.geraet }))
       .concat({ art: 'schutz', label: F.art.schutz, titel: F.tipp, text: a.tipp });
     $('fb-liste').innerHTML = liste.map((h, i) => `<li class="h-karte h-${h.art}" style="--i:${i}">
         <button class="h-kopf" type="button" aria-expanded="false"><span class="h-nr">${H_ICON[h.art]}</span>
@@ -3019,8 +3060,7 @@ window.Feier = (function () {
     btn.innerHTML = `<span>${esc(F.details)}</span>${PFEIL}`;
     $('fb-skip').textContent = F.ueberspringen; $('fb-skip').classList.remove('weg');
 
-    transkriptZeigen(liste);
-    $('s-spiel').dataset.phase = 'feedback';
+    $('s-spiel').dataset.phase = 'feedback'; $('s-spiel').dataset.fbStufe = '1';
     fb.hidden = false; fb.scrollTop = 0; $('s-spiel').scrollTop = 0;
     fb.classList.remove('rein'); void fb.offsetWidth; fb.classList.add('rein');
     (gut ? K.fx.richtig : K.fx.falsch)();
@@ -3040,7 +3080,10 @@ window.Feier = (function () {
     const fb = FB;
     if (!fb || fb.stufe !== 1) return;
     fb.stufe = 2;
-    $('feedback').dataset.stufe = '2';
+    $('feedback').dataset.stufe = '2'; $('s-spiel').dataset.fbStufe = '2';
+    // erst jetzt kommt der Gesprächsverlauf dazu – links beim Gerät, mit den markierten Stellen
+    transkriptZeigen(fb.liste);
+    transkriptLinks(true);
     hinweis(0, true);
   }
   function hinweis(i, erster) {
@@ -3097,7 +3140,8 @@ window.Feier = (function () {
     FB = null;
     hacker.weg();
     $('feedback').hidden = true;
-    delete $('s-spiel').dataset.phase;
+    delete $('s-spiel').dataset.phase; delete $('s-spiel').dataset.fbStufe;
+    geraet.querySelectorAll('.ziel-aktiv').forEach(z => z.classList.remove('ziel-aktiv', 'm-rot', 'm-gruen', 'm-info'));
     const naechster = S.i + 1;
     if (naechster >= lvStart(S.level) + LV[S.level].anzahl) levelEnde(S.level);
     else anrufStarten(naechster);
@@ -3316,7 +3360,6 @@ window.Feier = (function () {
       if (!$('feedback').hidden) return;
       const z = geraet.dataset.zustand;
       if (z === 'ring' && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); annehmen(); }
-      if (z === 'talk' && e.key === 'Escape') beenden('aufgelegt');
       if (z === 'talk' && !$('wahl').hidden && (e.key === '1' || e.key === '2')) waehlen(+e.key - 1);
     }
     if (scr === 's-level' && e.key === 'Enter' && document.activeElement !== $('lv-los')) { e.preventDefault(); $('lv-los').click(); }

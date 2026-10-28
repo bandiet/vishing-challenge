@@ -20,6 +20,9 @@
   const warte = ms => new Promise(r => setTimeout(r, ms));
   const reduziert = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  // schmale oder sehr niedrige Fenster: alles untereinander (dieselbe Grenze wie im CSS)
+  const SCHMAL = matchMedia('(max-width: 959px), (max-height: 540px)');
+  const schmal = () => SCHMAL.matches;
 
   const S = {
     i: 0, level: 0, ergebnisse: [], beute: 0, pause: null, pauseFertig: false,
@@ -168,7 +171,8 @@
         t2 = setTimeout(() => ({ freut: K.fx.hackerHaha, aergert: K.fx.hackerGrr, gaehnt: K.fx.hackerGaehn }[stimmung])(), 650);
         t = setTimeout(() => el.classList.remove('da'), Math.min(6500, 2600 + text.length * 40));   // lange Sätze bleiben länger
       },
-      weg() { clearTimeout(t); clearTimeout(t2); el.classList.remove('da'); }
+      weg() { clearTimeout(t); clearTimeout(t2); el.classList.remove('da'); },
+      da: () => el.classList.contains('da')
     };
   })();
 
@@ -388,6 +392,7 @@
   }
   // Klick auf die Beute: der Hacker fliegt herein und sagt, was er von seiner Kasse hält
   $('hud-beute').addEventListener('click', () => {
+    if (hacker.da()) { hacker.weg(); K.fx.klick(); return; }   // ist er schon da, geht er wieder; erst der nächste Klick holt ihn mit neuem Satz
     const b = S.beute, gestartet = S.ergebnisse.some(Boolean);
     const stufe = !gestartet ? 'vorStart' : !b ? 'leer' : b <= 1000 ? 'klein' : b <= 100000 ? 'mittel' : 'gross';
     K.fx.klick();
@@ -426,7 +431,8 @@
     S.lauf = { pfad: [], zuege: [], runde: 0, aufgelegt: false, beendet: false, verlauf: [] };
     if (app.dataset.screen !== 's-spiel') zeige('s-spiel');
     hudAktualisieren();
-    $('urteil').hidden = true; $('feedback').hidden = true; delete $('s-spiel').dataset.phase;
+    $('urteil').hidden = true; $('feedback').hidden = true; delete $('s-spiel').dataset.phase; delete $('s-spiel').dataset.fbStufe;
+    transkriptLinks(false);
     $('wahl').hidden = true; $('cc-nochmal').hidden = true;
     $('cc-log').innerHTML = '<p class="cc-leer">Noch kein Gespräch.</p>';
     $('ablehnen-tipp').hidden = true; $('geraet-ende').hidden = true;
@@ -528,7 +534,7 @@
     $('ablehnen-tipp').hidden = true;
     $('cc-log').innerHTML = '';
     // Beim Klingeln bleibt die Lage offen (zum Fertiglesen); erst beim Abheben klappt sie ein – dort, wo sie über dem Gerät steht
-    if (innerWidth < 960) { $('lage').classList.add('zu'); $('lage-toggle').setAttribute('aria-expanded', 'false'); }
+    if (schmal()) { $('lage').classList.add('zu'); $('lage-toggle').setAttribute('aria-expanded', 'false'); }
     timerStart = performance.now();
     clearInterval(timerId);
     timerId = setInterval(() => {
@@ -552,14 +558,22 @@
   $('ph-auflegen').addEventListener('click', () => beenden('aufgelegt'));
   $('win-auflegen').addEventListener('click', () => beenden('aufgelegt'));
 
-  /* ---------- Transkript: links neben dem Gerät (wie die Live-Untertitel des Telefons bzw. von Teams) ----------
-     Es bleibt beim Feedback stehen; die Hinweise markieren dort ihre Stelle im Gespräch. */
+  /* ---------- Transkript: im Gespräch rechts über den Antworten, bei „Details anzeigen“ links beim Gerät ----------
+     Das Telefon rückt nach links (Teams nach oben) und macht Platz; die Hinweise markieren ihre Stelle im Gespräch. */
   function transkriptLinks(links) {
     const cc = $('cc'), spalte = geraet.parentElement;
+    if (links === spalte.classList.contains('mit-transkript')) return;
+    const dev = geraet.querySelector(geraet.dataset.art === 'teams' ? '.win' : '.phone'), vorher = dev.getBoundingClientRect();
     if (links) geraet.after(cc); else $('dialog').prepend(cc);
     spalte.classList.toggle('mit-transkript', links);
+    if (!links || reduziert) return;
+    // Gerät gleitet an seinen neuen Platz, das Transkript schiebt sich daneben
+    const nachher = dev.getBoundingClientRect();
+    if (vorher.width && nachher.width) dev.animate([
+      { transform: `translate(${vorher.left - nachher.left}px, ${vorher.top - nachher.top}px) scale(${vorher.width / nachher.width})`, transformOrigin: 'top left' },
+      { transform: 'none', transformOrigin: 'top left' }], { duration: 550, easing: 'cubic-bezier(.2, .8, .2, 1)' });
+    cc.animate([{ opacity: 0, transform: 'translateX(40px)' }, { opacity: 1, transform: 'none' }], { duration: 450, delay: 150, easing: 'ease-out', fill: 'backwards' });
   }
-  transkriptLinks(true);
 
   // Feedback: der ganze Gesprächsverlauf, die Stellen zu den Hinweisen markiert (wie das Spotlight in der Phishing Challenge)
   function transkriptZeigen(liste) {
@@ -568,20 +582,33 @@
       let html = esc(z.text);
       liste.forEach((h, k) => [].concat(h.zitat || []).forEach(q => {
         const such = esc(q), i = html.toLowerCase().indexOf(such.toLowerCase());
-        if (i >= 0) html = html.slice(0, i) + `<mark class="cc-mark m-${h.art}" data-h="${k}">${html.slice(i, i + such.length)}</mark>` + html.slice(i + such.length);
+        if (i >= 0) html = html.slice(0, i) + `<mark class="cc-mark m-${h.art}" data-h="${k}" role="button" tabindex="0">${html.slice(i, i + such.length)}</mark>` + html.slice(i + such.length);
       }));
       return `<div class="cc-zeile cc-${z.art}"><span class="cc-wer">${esc(z.wer)}</span><p>${html}</p></div>`;
     }).join('') || '<p class="cc-leer">Noch kein Gespräch.</p>';
     log.scrollTop = 0;
   }
+  // Stellen am Gerät, auf die ein Hinweis zeigen kann (signale[].geraet); sie leuchten im Feedback mit auf
+  const GERAET_ZIEL = { anrufer: '#ph-name, #ph-avatar, .win-namensschild', extern: '#win-extern', namensschild: '.win-namensschild' };
   function transkriptMarke(i) {
-    const log = $('cc-log');
+    const log = $('cc-log'), h = FB && FB.liste[i];
+    geraet.querySelectorAll('.ziel-aktiv').forEach(z => z.classList.remove('ziel-aktiv', 'm-rot', 'm-gruen', 'm-info'));
+    if (h && h.geraet) geraet.querySelectorAll(GERAET_ZIEL[h.geraet]).forEach(z => z.classList.add('ziel-aktiv', 'm-' + h.art));
     log.querySelectorAll('.cc-mark').forEach(m => m.classList.toggle('aktiv', +m.dataset.h === i));
     const m = log.querySelector(`.cc-mark[data-h="${i}"]`);
     if (!m) return;
     const lr = log.getBoundingClientRect(), mr = m.getBoundingClientRect();
     log.scrollTo({ top: Math.max(0, log.scrollTop + mr.top - lr.top - lr.height / 3), behavior: reduziert ? 'auto' : 'smooth' });
   }
+
+  const markeKlick = e => {
+    const m = e.target.closest('.cc-mark');
+    if (!m || !FB || FB.stufe !== 2) return;
+    if (e.type === 'keydown') { if (e.key !== 'Enter' && e.key !== ' ') return; e.preventDefault(); }
+    K.fx.klick(); hinweis(+m.dataset.h);
+  };
+  $('cc-log').addEventListener('click', markeKlick);
+  $('cc-log').addEventListener('keydown', markeKlick);
 
   /* ---------- Untertitel ---------- */
   let ccZeile = null, ccWoerter = [], ccRaf = null, ccQuelle = null;
@@ -631,7 +658,8 @@
       ccFertig();
       // Die Leitung reißt ab (die falsche Chefin bei der Kontrollfrage)
       if (zeile.glitch) { K.fx.glitch(0.45); setTimeout(() => { if (ep === S.epoche) beenden('verbindung'); }, 900); return; }
-      setTimeout(() => { if (ep === S.epoche && !S.lauf.beendet) danach(); }, 380);
+      const letzte = S.lauf.runde >= a.runden.length;   // danach wird aufgelegt – nicht lange warten
+      setTimeout(() => { if (ep === S.epoche && !S.lauf.beendet) danach(); }, letzte ? 120 : 380);
     };
     await K.stimme(zeile.id, a.klang, fertig);
     if (ep !== S.epoche) { K.stimmeStop(); return; }
@@ -651,7 +679,7 @@
       `<button class="option" type="button" data-i="${i}" style="--i:${i}"><kbd>${i + 1}</kbd><span>${esc(o.text)}</span></button>`).join('');
     w.hidden = false;
     w.classList.remove('rein'); void w.offsetWidth; w.classList.add('rein');
-    if (innerWidth < 960) setTimeout(() => scrollZu($('s-spiel'), w), 60);
+    if (schmal()) setTimeout(() => scrollZu($('s-spiel'), w), 60);
     $('cc-nochmal').hidden = false;
     w.querySelectorAll('.option').forEach(b => {
       b.addEventListener('click', () => waehlen(+b.dataset.i));
@@ -690,7 +718,7 @@
     const ende = $('geraet-ende');
     ende.textContent = grund === 'verbindung' ? C.telefon.verbindungWeg : C.telefon.beendet; ende.hidden = false;
     setZustand('ende');
-    await warte(1500);
+    await warte(900);
     if (ep === S.epoche) urteilZeigen();
   }
 
@@ -728,14 +756,12 @@
   function urteilZeigen() {
     const U = C.urteil, u = $('urteil');
     $('urteil-frage').textContent = U.frage;
-    $('urteil-sub').textContent = U.sub;
     const e = $('urteil-echt'), f = $('urteil-fake');
-    e.querySelector('b').textContent = U.echt.titel; e.querySelector('span').textContent = U.echt.text;
-    f.querySelector('b').textContent = U.fake.titel; f.querySelector('span').textContent = U.fake.text;
+    e.querySelector('b').textContent = U.echt; f.querySelector('b').textContent = U.fake;
     [e, f].forEach(b => b.classList.remove('gewaehlt', 'abgewaehlt'));
     u.classList.remove('entschieden');
     u.hidden = false;
-    if (innerWidth < 960) setTimeout(() => scrollZu($('s-spiel'), u), 60);
+    if (schmal()) setTimeout(() => scrollZu($('s-spiel'), u), 60);
     K.fx.bass();
     K.musik('intro', 0.14, 2);
   }
@@ -775,7 +801,6 @@
     schutz: '<svg class="ico" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m8.6 12 2.4 2.4 4.4-4.9"/></svg>'
   };
   const CHEVRON = '<svg class="ico h-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>';
-  const schmal = () => innerWidth < 960;
   let FB = null;
 
   function feedbackZeigen(erg, kasseVorher) {
@@ -795,7 +820,7 @@
 
     // Hinweise: die ersten drei Signale, die zum Gesprächsverlauf passen, zum Schluss „Das schützt dich“ – höchstens vier Schritte
     const liste = a.signale.filter(s => (!s.wenn || erg.pfad.includes(s.wenn)) && (!s.wennNicht || !erg.pfad.includes(s.wennNicht))).slice(0, 3)
-      .map(s => ({ art: s.art, label: F.art[s.art], titel: s.titel, text: s.text, zitat: s.zitat }))
+      .map(s => ({ art: s.art, label: F.art[s.art], titel: s.titel, text: s.text, zitat: s.zitat, geraet: s.geraet }))
       .concat({ art: 'schutz', label: F.art.schutz, titel: F.tipp, text: a.tipp });
     $('fb-liste').innerHTML = liste.map((h, i) => `<li class="h-karte h-${h.art}" style="--i:${i}">
         <button class="h-kopf" type="button" aria-expanded="false"><span class="h-nr">${H_ICON[h.art]}</span>
@@ -809,8 +834,7 @@
     btn.innerHTML = `<span>${esc(F.details)}</span>${PFEIL}`;
     $('fb-skip').textContent = F.ueberspringen; $('fb-skip').classList.remove('weg');
 
-    transkriptZeigen(liste);
-    $('s-spiel').dataset.phase = 'feedback';
+    $('s-spiel').dataset.phase = 'feedback'; $('s-spiel').dataset.fbStufe = '1';
     fb.hidden = false; fb.scrollTop = 0; $('s-spiel').scrollTop = 0;
     fb.classList.remove('rein'); void fb.offsetWidth; fb.classList.add('rein');
     (gut ? K.fx.richtig : K.fx.falsch)();
@@ -830,7 +854,10 @@
     const fb = FB;
     if (!fb || fb.stufe !== 1) return;
     fb.stufe = 2;
-    $('feedback').dataset.stufe = '2';
+    $('feedback').dataset.stufe = '2'; $('s-spiel').dataset.fbStufe = '2';
+    // erst jetzt kommt der Gesprächsverlauf dazu – links beim Gerät, mit den markierten Stellen
+    transkriptZeigen(fb.liste);
+    transkriptLinks(true);
     hinweis(0, true);
   }
   function hinweis(i, erster) {
@@ -887,7 +914,8 @@
     FB = null;
     hacker.weg();
     $('feedback').hidden = true;
-    delete $('s-spiel').dataset.phase;
+    delete $('s-spiel').dataset.phase; delete $('s-spiel').dataset.fbStufe;
+    geraet.querySelectorAll('.ziel-aktiv').forEach(z => z.classList.remove('ziel-aktiv', 'm-rot', 'm-gruen', 'm-info'));
     const naechster = S.i + 1;
     if (naechster >= lvStart(S.level) + LV[S.level].anzahl) levelEnde(S.level);
     else anrufStarten(naechster);
@@ -1106,7 +1134,6 @@
       if (!$('feedback').hidden) return;
       const z = geraet.dataset.zustand;
       if (z === 'ring' && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); annehmen(); }
-      if (z === 'talk' && e.key === 'Escape') beenden('aufgelegt');
       if (z === 'talk' && !$('wahl').hidden && (e.key === '1' || e.key === '2')) waehlen(+e.key - 1);
     }
     if (scr === 's-level' && e.key === 'Enter' && document.activeElement !== $('lv-los')) { e.preventDefault(); $('lv-los').click(); }
