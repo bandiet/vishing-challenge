@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LMS-Simulator · Vishing Challenge</title>
+<style>
+  :root { --bg: #0F1117; --karte: #171A23; --kante: #2A2F3D; --text: #E8EAF0; --dim: #8A91A5; --ok: #34D399; --fehler: #F87171; --gelb: #FBBF24; --blau: #60A5FA; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { display: grid; grid-template-rows: auto 1fr; }
+  header { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--kante); background: var(--karte); }
+  header h1 { font-size: 15px; margin: 0 8px 0 0; }
+  label { display: inline-flex; gap: 6px; align-items: center; color: var(--dim); }
+  select, input, button { font: inherit; color: var(--text); background: #0B0D12; border: 1px solid var(--kante); border-radius: 8px; padding: 6px 10px; }
+  button { cursor: pointer; } button:hover { border-color: var(--blau); }
+  .gruppe { display: inline-flex; gap: 4px; }
+  .gruppe button.an { background: #1E3A8A; border-color: var(--blau); }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) 380px; min-height: 0; }
+  #buehne { position: relative; overflow: hidden; display: grid; place-items: center; background: repeating-conic-gradient(#12141B 0 25%, #0F1117 0 50%) 0 0 / 24px 24px; }
+  #rahmen { position: relative; transform-origin: 0 0; box-shadow: 0 0 0 1px #3B4252, 0 20px 60px rgba(0,0,0,.6); background: #000; }
+  #rahmen iframe { display: block; border: 0; width: 100%; height: 100%; }
+  #masse { position: absolute; left: 10px; bottom: 8px; color: var(--dim); font-size: 12px; }
+  aside { border-left: 1px solid var(--kante); overflow-y: auto; padding: 12px 14px 30px; display: grid; align-content: start; gap: 14px; }
+  h2 { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--dim); margin: 0 0 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  td { padding: 4px 6px; border-bottom: 1px solid var(--kante); vertical-align: top; word-break: break-all; }
+  td:first-child { color: var(--dim); white-space: nowrap; word-break: normal; width: 1%; }
+  .ok { color: var(--ok); } .fehler { color: var(--fehler); } .gelb { color: var(--gelb); }
+  #log { font: 11.5px/1.5 ui-monospace, Menlo, Consolas, monospace; max-height: 340px; overflow-y: auto; background: #0B0D12; border: 1px solid var(--kante); border-radius: 8px; padding: 6px 8px; }
+  #log div { white-space: pre-wrap; word-break: break-all; }
+  #bericht { font-size: 12.5px; } #bericht li { margin: 2px 0; }
+  .hinweis { color: var(--dim); font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>LMS-Simulator · Vishing Challenge</h1>
+  <label>Paket
+    <select id="quelle">
+      <option value="../index.html">Quelle (index.html)</option>
+      <option value="../dist/site/index.html">Gebaut (dist/site/index.html)</option>
+    </select></label>
+  <label>SCORM
+    <select id="version"><option value="1.2">1.2</option><option value="2004">2004</option></select></label>
+  <label>Name im LMS <input id="lernname" value="Müller, Sandra" size="14"></label>
+  <span class="gruppe" id="groessen">
+    <button data-g="1024x600" title="Typisches LMS-Fenster mit Kopfzeile">LMS 1024×600</button>
+    <button data-g="1366x768">Laptop</button>
+    <button data-g="1920x1080">Full HD</button>
+    <button data-g="2560x1440">2560</button>
+    <button data-g="768x1024">Tablet</button>
+    <button data-g="375x667">Handy</button>
+    <button data-g="844x390">Handy quer</button>
+  </span>
+  <button id="neu">Neu laden (Fortsetzen testen)</button>
+  <button id="leeren">LMS-Daten löschen</button>
+</header>
+<main>
+  <div id="buehne"><div id="rahmen"><iframe id="kurs" title="Kurs"></iframe></div><span id="masse"></span></div>
+  <aside>
+    <section><h2>Status im LMS</h2><table id="status"></table></section>
+    <section><h2>SCORM-Aufrufe</h2><div id="log"></div></section>
+    <p class="hinweis">Die Daten bleiben im Browser gespeichert (wie im echten LMS). „Neu laden“ startet den Kurs neu – nach einem bestandenen Level sollte er beim nächsten Level weitermachen.
+      Abgeschlossen (completed) und bestanden (passed) wird erst gemeldet, wenn beide Levels bestanden sind.</p>
+  </aside>
+</main>
+<script>
+(function () {
+  'use strict';
+  const $ = s => document.querySelector(s);
+  const einst = JSON.parse(localStorage.getItem('vc-lms-sim-einst') || '{}');
+  const ver = einst.version || '1.2';
+  $('#version').value = ver;
+  $('#quelle').value = einst.quelle || '../index.html';
+  $('#lernname').value = einst.name || 'Müller, Sandra';
+  const groesse = einst.groesse || '1024x600';
+  const SPEICHER = 'vc-lms-sim-daten-' + ver;
+  let cmi = JSON.parse(localStorage.getItem(SPEICHER) || '{}');
+  let offen = false, beendet = false, letzterFehler = '0';
+
+  function merke() { localStorage.setItem('vc-lms-sim-einst', JSON.stringify({ version: $('#version').value, quelle: $('#quelle').value, name: $('#lernname').value, groesse: $('#rahmen').dataset.g })); }
+  function log(text, klasse) {
+    const d = document.createElement('div'); d.textContent = new Date().toTimeString().slice(0, 8) + '  ' + text;
+    if (klasse) d.className = klasse;
+    $('#log').prepend(d);
+    while ($('#log').childNodes.length > 300) $('#log').lastChild.remove();
+  }
+  function speichern() { localStorage.setItem(SPEICHER, JSON.stringify(cmi)); zeigeStatus(); }
+
+  const name = () => $('#lernname').value;
+  const V12 = { status: ['passed', 'completed', 'failed', 'incomplete', 'browsed', 'not attempted'], exit: ['time-out', 'suspend', 'logout', ''] };
+  const V04 = { completion: ['completed', 'incomplete', 'not attempted', 'unknown'], success: ['passed', 'failed', 'unknown'], exit: ['time-out', 'suspend', 'logout', 'normal', ''] };
+
+  function hole(k) {
+    if (!offen) { letzterFehler = '301'; log('GetValue vor Initialize: ' + k, 'fehler'); return ''; }
+    letzterFehler = '0';
+    if (k === 'cmi.core.student_name' || k === 'cmi.learner_name') return name();
+    if (k === 'cmi.core.student_id' || k === 'cmi.learner_id') return 'sandra.mueller@nordwerk.de';
+    if (k === 'cmi.interactions._count') return String(Object.keys(cmi).filter(x => /^cmi\.interactions\.\d+\.id$/.test(x)).length);
+    if (k === 'cmi.core.lesson_status' && !cmi[k]) return 'not attempted';
+    if (k === 'cmi.completion_status' && !cmi[k]) return 'not attempted';
+    if (k === 'cmi.success_status' && !cmi[k]) return 'unknown';
+    if (k === 'cmi.core.entry' || k === 'cmi.entry') return cmi['cmi.suspend_data'] ? 'resume' : 'ab-initio';
+    return cmi[k] || '';
+  }
+  function setze(k, v) {
+    if (!offen || beendet) { letzterFehler = '301'; log('SetValue außerhalb der Sitzung: ' + k, 'fehler'); return 'false'; }
+    v = String(v);
+    let problem = '';
+    if (k === 'cmi.core.lesson_status' && !V12.status.includes(v)) problem = 'ungültiger lesson_status';
+    if (k === 'cmi.core.exit' && !V12.exit.includes(v)) problem = 'ungültiges exit';
+    if (k === 'cmi.completion_status' && !V04.completion.includes(v)) problem = 'ungültiger completion_status';
+    if (k === 'cmi.success_status' && !V04.success.includes(v)) problem = 'ungültiger success_status';
+    if (k === 'cmi.exit' && !V04.exit.includes(v)) problem = 'ungültiges exit';
+    if (/score\.(raw|min|max)$/.test(k) && (isNaN(+v) || +v < 0 || +v > 100)) problem = 'Punktzahl außerhalb 0–100';
+    if (k === 'cmi.score.scaled' && (isNaN(+v) || +v < -1 || +v > 1)) problem = 'scaled außerhalb −1…1';
+    if (k === 'cmi.suspend_data' && v.length > (ver === '1.2' ? 4096 : 64000)) problem = `suspend_data zu lang (${v.length} Zeichen)`;
+    if (problem) { letzterFehler = '405'; log(`SetValue ${k} = ${v.slice(0, 120)}  ✗ ${problem}`, 'fehler'); return 'false'; }
+    letzterFehler = '0';
+    cmi[k] = v;
+    log(`SetValue ${k} = ${v.length > 120 ? v.slice(0, 120) + ' … (' + v.length + ' Zeichen)' : v}`);
+    return 'true';
+  }
+
+  if (ver === '1.2') {
+    window.API = {
+      LMSInitialize() { offen = true; beendet = false; log('LMSInitialize', 'ok'); return 'true'; },
+      LMSFinish() { log('LMSFinish', 'ok'); beendet = true; speichern(); return 'true'; },
+      LMSGetValue: k => { const v = hole(k); log(`GetValue ${k} → ${v.slice(0, 80)}`, 'gelb'); return v; },
+      LMSSetValue: (k, v) => setze(k, v),
+      LMSCommit() { log('LMSCommit', 'ok'); speichern(); return 'true'; },
+      LMSGetLastError: () => letzterFehler, LMSGetErrorString: c => 'Fehler ' + c, LMSGetDiagnostic: c => 'Fehler ' + c
+    };
+  } else {
+    window.API_1484_11 = {
+      Initialize() { offen = true; beendet = false; log('Initialize', 'ok'); return 'true'; },
+      Terminate() { log('Terminate', 'ok'); beendet = true; speichern(); return 'true'; },
+      GetValue: k => { const v = hole(k); log(`GetValue ${k} → ${v.slice(0, 80)}`, 'gelb'); return v; },
+      SetValue: (k, v) => setze(k, v),
+      Commit() { log('Commit', 'ok'); speichern(); return 'true'; },
+      GetLastError: () => letzterFehler, GetErrorString: c => 'Fehler ' + c, GetDiagnostic: c => 'Fehler ' + c
+    };
+  }
+
+  function zeigeStatus() {
+    const z = (k, v, kl) => `<tr><td>${k}</td><td class="${kl || ''}">${(v || '–').toString().replace(/</g, '&lt;')}</td></tr>`;
+    const n = Object.keys(cmi).filter(x => /^cmi\.interactions\.\d+\.id$/.test(x)).length;
+    const falsch = Object.keys(cmi).filter(x => /^cmi\.interactions\.\d+\.result$/.test(x) && /wrong|incorrect/.test(cmi[x])).length;
+    const sd = cmi['cmi.suspend_data'] || '';
+    let html = z('SCORM', ver);
+    if (ver === '1.2') {
+      const st = cmi['cmi.core.lesson_status'] || 'not attempted';
+      html += z('lesson_status', st, /passed|completed/.test(st) ? 'ok' : st === 'failed' ? 'fehler' : '')
+        + z('score.raw', cmi['cmi.core.score.raw']) + z('lesson_location', cmi['cmi.core.lesson_location']) + z('exit', cmi['cmi.core.exit'])
+        + z('session_time', cmi['cmi.core.session_time']);
+    } else {
+      html += z('completion_status', cmi['cmi.completion_status'], cmi['cmi.completion_status'] === 'completed' ? 'ok' : '')
+        + z('success_status', cmi['cmi.success_status'], cmi['cmi.success_status'] === 'passed' ? 'ok' : cmi['cmi.success_status'] === 'failed' ? 'fehler' : '')
+        + z('progress_measure', cmi['cmi.progress_measure'])
+        + z('score.raw / scaled', (cmi['cmi.score.raw'] || '–') + ' / ' + (cmi['cmi.score.scaled'] || '–')) + z('location', cmi['cmi.location'])
+        + z('exit', cmi['cmi.exit']) + z('session_time', cmi['cmi.session_time']);
+    }
+    html += z('interactions', n ? `${n} Antworten, davon ${falsch} falsch` : '') + z('suspend_data', sd ? `${sd.length} Zeichen: ${sd}` : '');
+    $('#status').innerHTML = html;
+  }
+
+  // Größe und Skalierung
+  function groesseSetzen(g) {
+    const [b, h] = g.split('x').map(Number);
+    const r = $('#rahmen');
+    r.dataset.g = g; r.style.width = b + 'px'; r.style.height = h + 'px';
+    document.querySelectorAll('#groessen button').forEach(x => x.classList.toggle('an', x.dataset.g === g));
+    skalieren(); merke();
+  }
+  function skalieren() {
+    const r = $('#rahmen'), bue = $('#buehne');
+    const b = parseInt(r.style.width), h = parseInt(r.style.height);
+    const s = Math.min(1, (bue.clientWidth - 40) / b, (bue.clientHeight - 50) / h);
+    r.style.transform = `scale(${s})`;
+    r.style.marginRight = (b * s - b) + 'px'; r.style.marginBottom = (h * s - h) + 'px';
+    $('#masse').textContent = `${b} × ${h} px` + (s < 1 ? ` · angezeigt mit ${Math.round(s * 100)} %` : '');
+  }
+  window.addEventListener('resize', skalieren);
+  document.querySelectorAll('#groessen button').forEach(x => x.addEventListener('click', () => groesseSetzen(x.dataset.g)));
+
+  function laden() {
+    offen = false; beendet = false;
+    log('— Kurs wird geladen: ' + $('#quelle').value, 'gelb');
+    $('#kurs').src = $('#quelle').value + '?t=' + Date.now();
+  }
+  $('#neu').addEventListener('click', () => { merke(); location.reload(); });
+  $('#leeren').addEventListener('click', () => { localStorage.removeItem(SPEICHER); cmi = {}; log('LMS-Daten gelöscht', 'fehler'); zeigeStatus(); laden(); });
+  $('#version').addEventListener('change', () => { merke(); location.reload(); });
+  $('#quelle').addEventListener('change', () => { merke(); laden(); });
+  $('#lernname').addEventListener('change', () => { merke(); });
+
+  groesseSetzen(groesse);
+  zeigeStatus();
+  laden();
+})();
+</script>
+</body>
+</html>

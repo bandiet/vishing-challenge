@@ -231,9 +231,6 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .lv-icon > svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 22px 34px rgba(255, 45, 135, .5)); animation: schildWippen 3.6s 1.2s ease-in-out infinite; }
 @keyframes iconEin { 0% { opacity: 0; transform: scale(.3) rotate(-25deg); } 70% { transform: scale(1.1) rotate(6deg); } }
 @keyframes schildWippen { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-5deg) scale(1.03); } 75% { transform: rotate(5deg); } }
-.lv-zahl { position: absolute; top: -12px; right: -14px; min-width: 46px; height: 46px; padding: 0 9px; border-radius: 99px; display: grid; place-items: center;
-  background: var(--mint); color: #000; font-weight: 900; font-size: 1.3rem; box-shadow: 0 10px 20px -6px rgba(23, 255, 192, .7); transform: scale(0); }
-.lv-zahl.da { transform: scale(1); transition: transform .4s var(--sprung); }
 .intro-level .untertitel { color: var(--text-2); font-size: 1.15rem; margin-top: 8px; }
 .lv-info { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin: 24px 0 30px; }
 .lv-info span { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 99px; background: rgba(255, 255, 255, .05); box-shadow: inset 0 0 0 1px var(--kante); font-size: .92rem; color: var(--text-2); font-weight: 600; }
@@ -348,8 +345,15 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .win-titel { display: flex; align-items: center; gap: 14px; min-height: 52px; padding: 8px 12px 8px 14px; background: var(--leiste); border-bottom: 1px solid rgba(255,255,255,.05); font: 600 12px/1 var(--display); color: #D6D6E4; }
 .win-dots { display: flex; gap: 6px; }
 .win-dots i { width: 10px; height: 10px; border-radius: 50%; background: #45415e; }
-.win-app { flex: 1; display: flex; justify-content: center; }
-.win-suche { display: inline-flex; align-items: center; gap: 8px; width: min(320px, 70%); padding: 7px 12px; border-radius: 8px; background: rgba(255,255,255,.07); color: #9C99B5; font: 500 12px/1 var(--display); }
+/* Titelleiste vor dem Anruf: Startmenü und App-Name links, Suche in der Mitte, Glocke, Einstellungen und Profilbild rechts */
+.win-app { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 320px) minmax(0, 1fr); align-items: center; gap: 14px; min-width: 0; }
+.wa-name { justify-self: start; display: inline-flex; align-items: center; gap: 9px; font: 600 13px/1 var(--display); color: #fff; }
+.wa-name .ico { width: 16px; height: 16px; stroke-width: 3.2; color: #9C99B5; }
+.wa-rechts { justify-self: end; display: inline-flex; align-items: center; gap: 14px; color: #9C99B5; }
+.wa-rechts .ico { width: 17px; height: 17px; }
+.wa-ich { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: #3B3860; color: #D6D6E4; }
+.wa-ich .ico { width: 17px; height: 17px; }
+.win-suche { display: inline-flex; align-items: center; gap: 8px; width: 100%; padding: 7px 12px; border-radius: 8px; background: rgba(255,255,255,.07); color: #9C99B5; font: 500 12px/1 var(--display); }
 .win-suche .ico { width: 15px; height: 15px; }
 .win-call { display: none; flex: 1; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; }
 .geraet[data-zustand="talk"] .win-app, .geraet[data-zustand="ende"] .win-app { display: none; }
@@ -368,18 +372,30 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .geraet:not([data-zustand="talk"]) .wbtn-auflegen { opacity: .4; pointer-events: none; }
 
 .win-body { position: relative; display: grid; place-items: center; background: radial-gradient(90% 90% at 50% 45%, #2A2740, #1A1825); overflow: hidden; }
-/* Posteingang vor dem Anruf: wie ein Mailprogramm – Ordner links, Liste mit Kürzel, Absender, Uhrzeit und Betreff rechts */
+/* Posteingang vor dem Anruf: wie ein Mailprogramm – App-Leiste ganz links, oben die Symbolleiste (nur zur Zierde),
+   darunter Ordner, Liste mit Kürzel, Absender, Uhrzeit und Betreff, rechts der Lesebereich */
 .win-leer { display: none; position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; background: #1B1926; }
-.geraet[data-zustand="ruhe"] .win-leer, .geraet[data-zustand="ring"] .win-leer { display: grid; grid-template-columns: clamp(150px, 25%, 200px) minmax(0, 1fr); }
-.mail-ordner { display: flex; flex-direction: column; gap: 2px; padding: 14px 10px; background: #211F2E; border-right: 1px solid rgba(255,255,255,.05); font: 500 12px/1.2 var(--display); color: #C9C6DD; white-space: nowrap; }
-.mo-neu { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding: 9px 12px; border-radius: 6px; background: var(--teams-tief); color: #fff; font-weight: 600; }
+.geraet[data-zustand="ruhe"] .win-leer, .geraet[data-zustand="ring"] .win-leer { display: grid;
+  grid-template-columns: 46px clamp(130px, 20%, 180px) minmax(0, 1fr) minmax(0, 1.1fr); grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "leiste band band band" "leiste ordner liste lesen"; }
+.mail-leiste { grid-area: leiste; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 0; background: #17151F; border-right: 1px solid rgba(255,255,255,.05); }
+.mail-leiste i { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; color: #7D7A96; }
+.mail-leiste i.an { color: var(--teams); background: rgba(127,133,245,.14); }
+.mail-leiste .ico { width: 18px; height: 18px; }
+.mail-leiste .ml-unten { margin-top: auto; }
+.mail-band { grid-area: band; display: flex; align-items: center; gap: 15px; min-width: 0; overflow: hidden; padding: 7px 14px 7px 10px; background: #211F2E; border-bottom: 1px solid rgba(255,255,255,.06); color: #8E8AA8; }
+.mail-band > .ico { width: 17px; height: 17px; }
+.mb-trenner { flex: none; width: 1px; height: 18px; background: rgba(255,255,255,.1); }
+.mo-neu { flex: none; display: flex; align-items: center; gap: 7px; margin-right: 2px; padding: 7px 12px; border-radius: 6px; background: var(--teams-tief); color: #fff; font: 600 12px/1 var(--display); white-space: nowrap; }
+.mo-neu .ico { width: 15px; height: 15px; }
+.mail-ordner { grid-area: ordner; display: flex; flex-direction: column; gap: 2px; padding: 12px 8px; background: #1E1C29; border-right: 1px solid rgba(255,255,255,.05); font: 500 12px/1.2 var(--display); color: #C9C6DD; white-space: nowrap; overflow: hidden; }
+.mail-ordner small { padding: 2px 10px 8px; font: 600 10.5px/1 var(--display); letter-spacing: .04em; color: #7D7A96; }
 .mo { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: 6px; }
 .mail-ordner .ico { width: 15px; height: 15px; color: #9C99B5; }
-.mo-neu .ico { color: #fff; }
 .mo.an { background: rgba(127,133,245,.16); color: #fff; font-weight: 600; box-shadow: inset 3px 0 0 var(--teams); }
 .mo.an .ico { color: var(--teams); }
 .mo b { margin-left: auto; color: var(--teams); font-weight: 700; font-variant-numeric: tabular-nums; }
-.mail-spalte { display: grid; grid-template-rows: auto auto minmax(0, 1fr); min-width: 0; padding: 14px 16px 0; }
+.mail-spalte { grid-area: liste; display: grid; grid-template-rows: auto auto minmax(0, 1fr); min-width: 0; padding: 14px 14px 0; border-right: 1px solid rgba(255,255,255,.05); }
 .mail-kopf { margin: 0 0 10px; display: flex; align-items: baseline; gap: 10px; font: 700 16px/1.1 var(--display); color: #fff; }
 .mail-kopf em { margin-left: auto; font: 600 12px/1 var(--display); font-style: normal; color: var(--gold); font-variant-numeric: tabular-nums; }
 .mail-tabs { margin: 0 0 4px; display: flex; gap: 18px; border-bottom: 1px solid rgba(255,255,255,.07); font: 600 12px/1 var(--display); color: #9C99B5; }
@@ -397,13 +413,39 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .mails li.ungelesen .m-von { color: #fff; font-weight: 700; }
 .mails li.ungelesen .m-betreff { color: #B4B8FF; font-weight: 600; }
 .mails li.ungelesen time { color: #B4B8FF; }
+.mails li.gewaehlt { background: rgba(127,133,245,.2); }
 .mails li.neu { animation: mailein .35s ease-out; }
 @keyframes mailein { from { opacity: 0; transform: translateY(-8px); } }
-/* schmales Fenster: nur die Liste */
+/* Lesebereich: Betreff, Absender, der Text nur als graue Zeilen; beim Spam-Ansturm ist nichts ausgewählt */
+.mail-lesen { grid-area: lesen; min-width: 0; display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; overflow: hidden; background: #1F1D2A; }
+.ml-betreff { margin: 0; font: 700 15px/1.3 var(--display); color: #fff; }
+.ml-von { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,.06); }
+.ml-von .m-av { grid-area: auto; }
+.ml-von span { display: grid; gap: 3px; min-width: 0; }
+.ml-von b { font: 600 12.5px/1.2 var(--display); color: #E6E4F2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ml-von small, .ml-von time { font: 400 11px/1.2 var(--display); color: #8E8AA8; white-space: nowrap; }
+.ml-text { display: grid; gap: 9px; }
+.ml-text i { display: block; height: 7px; border-radius: 4px; background: rgba(255,255,255,.08); }
+.ml-text i.absatz { height: 3px; background: none; }
+.ml-leer { margin: auto; display: grid; justify-items: center; gap: 5px; text-align: center; font: 400 12px/1.3 var(--display); color: #8E8AA8; }
+.ml-leer .ico { width: 46px; height: 46px; margin-bottom: 6px; stroke-width: 1.1; color: #5E5A7A; }
+.ml-leer b { font-weight: 600; font-size: 13px; color: #C9C6DD; }
+/* je schmaler das Fenster, desto mehr fällt weg: erst der Lesebereich, dann die Ordner, dann die App-Leiste */
+@container (max-width: 680px) {
+  .geraet[data-zustand="ruhe"] .win-leer, .geraet[data-zustand="ring"] .win-leer { grid-template-columns: 46px clamp(130px, 26%, 180px) minmax(0, 1fr); grid-template-areas: "leiste band band" "leiste ordner liste"; }
+  .mail-lesen { display: none; }
+  .mail-spalte { border-right: 0; }
+}
 @container (max-width: 520px) {
-  .geraet[data-zustand="ruhe"] .win-leer, .geraet[data-zustand="ring"] .win-leer { grid-template-columns: minmax(0, 1fr); }
-  .mail-ordner { display: none; }
+  .geraet[data-zustand="ruhe"] .win-leer, .geraet[data-zustand="ring"] .win-leer { grid-template-columns: 42px minmax(0, 1fr); grid-template-areas: "leiste band" "leiste liste"; }
+  .mail-ordner, .wa-name, .wa-rechts > .ico { display: none; }
+  .mo-neu span { display: none; }
   .mail-spalte { padding: 12px 12px 0; }
+  .win-app { grid-template-columns: minmax(0, 1fr) auto; }
+}
+@container (max-width: 400px) {
+  .geraet[data-zustand="ruhe"] .win-leer, .geraet[data-zustand="ring"] .win-leer { grid-template-columns: minmax(0, 1fr); grid-template-areas: "band" "liste"; }
+  .mail-leiste { display: none; }
 }
 
 .win-kachel { display: none; position: relative; z-index: 2; justify-items: center; gap: 4px; text-align: center; }
@@ -616,13 +658,16 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .pause-antwort[data-wert="falsch"] h3 { color: var(--pink); }
 .pause-antwort p { margin: 0; line-height: 1.6; color: var(--lilac); }
 .regel { display: grid; gap: 12px; }
+/* die Rückruf-Regel steht in derselben Box wie die Rückmeldung, durch eine Linie getrennt */
+.pause-antwort .regel { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--kante); gap: 10px; }
+.pause-antwort .regel-punkte li { padding: 0; background: none; box-shadow: none; }
+.pause-antwort h4 { margin: 0; font-size: .72rem; font-weight: 850; letter-spacing: .15em; text-transform: uppercase; color: var(--mint); }
 .regel-punkte { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .regel-punkte li { display: grid; gap: 10px; align-content: start; padding: 16px; border-radius: 14px; background: rgba(53,240,192,.07); border: 1px solid rgba(53,240,192,.25);
   animation: hochein .5s var(--ease) backwards; animation-delay: calc(var(--i) * .12s); }
 .regel-punkte .ico { color: var(--aqua); width: 26px; height: 26px; }
 .regel-punkte b { display: block; font: 700 16px/1.3 var(--display); margin-bottom: 4px; }
 .regel-punkte span { color: var(--lilac); font-size: 14px; line-height: 1.5; }
-#pause-weiter { justify-self: start; }
 
 /* ================= Level-Auswertung: Halbkreis-Messer wie in der Serie ================= */
 .le-karte { width: min(600px, 100%); padding: clamp(22px, 3vw, 34px) clamp(20px, 3vw, 36px) 24px; animation: karteHoch .7s var(--sprung) both; }
@@ -644,6 +689,7 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .m-label { position: absolute; display: flex; flex-direction: column; align-items: flex-start; font-size: .68rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase;
   color: var(--text-3); line-height: 1.2; white-space: nowrap; transform: translate(10px, -100%); }
 .m-label b { font-size: 1.05rem; color: #fff; letter-spacing: 0; }
+.le-hinweis { margin: 0 auto 4px; max-width: 30em; color: var(--text-2); font-size: .95rem; line-height: 1.5; }
 .le-kacheln { display: flex; gap: 8px; justify-content: center; margin: 14px 0 6px; }
 .le-kachel { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; animation: popEin .5s var(--sprung) both; animation-delay: calc(1s + var(--i) * .08s); }
 .le-kachel .ico { width: 20px; height: 20px; stroke-width: 2.8; }
@@ -692,7 +738,6 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .f-block { padding: 20px 22px 22px; animation: karteHoch .7s var(--sprung) both; }
 .f-block:nth-child(2) { animation-delay: .12s; }
 .f-block h2 { font-size: .76rem; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 16px; }
-.finale > .btn { margin-top: 24px; }
 .finale > .quellen { margin-top: 14px; text-align: center; }
 
 /* Akte und Regeln (Auswertung) */
@@ -733,7 +778,12 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .pause-szene { font-family: var(--font); color: var(--text-2); }
 .pause-antwort { background: var(--karte); border: 0; box-shadow: inset 0 0 0 1px var(--kante); border-radius: 20px; }
 .regel-punkte li { background: rgba(23, 255, 192, .07); border: 0; box-shadow: inset 0 0 0 1px rgba(23, 255, 192, .25); }
-#pause-weiter { align-self: flex-start; }
+/* Knöpfe am Ende der Frage und der Auswertung kleben unten (wie im Nugget); ragt der Inhalt über den Bildschirm, liegt ein Verlauf darunter */
+.pause-fuss, .f-fuss { position: sticky; bottom: 0; z-index: 3; display: flex; align-items: center; gap: 10px; margin: -6px 0 -14px; padding: 18px 0 14px; }
+.screen-pause.ueberlauf .pause-fuss, .screen-ende.ueberlauf .f-fuss { background: linear-gradient(rgba(11, 6, 51, 0), rgba(11, 6, 51, .96) 40%); }
+.f-fuss { align-self: stretch; flex-direction: column; justify-content: center; margin-top: 14px; padding-top: 30px; }
+.screen-ende.ueberlauf .f-fuss { background: linear-gradient(rgba(11, 6, 51, 0), rgba(11, 6, 51, .97) 26px); }
+.f-lms { margin: 0; display: inline-flex; align-items: center; gap: 8px; color: var(--mint); font-size: .92rem; font-weight: 650; }
 
 /* Vishing-Nugget im Sicherheitstipp: eine Lehre nach der anderen, danach die Frage */
 .nugget, .pause-quiz { display: grid; gap: 16px; }
@@ -766,6 +816,12 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .nugget-punkte button.fertig { background: rgba(23, 255, 192, .55); }
 .nugget-punkte button:disabled { cursor: default; }
 .ablehnen-tipp { font-family: var(--font); }
+
+/* Antworten im Gespräch: lila wie die eigenen Sprechblasen im Verlauf – so heben sie sich von den Untertiteln darüber ab */
+.wahl-label { color: #B9A8FF; }
+.wahl .option { border-radius: 16px 16px 4px 16px; background: rgba(108, 75, 232, .36); box-shadow: inset 0 0 0 1px rgba(174, 155, 255, .5), 0 12px 26px -16px rgba(108, 75, 232, .9); }
+.wahl .option:hover { background: rgba(108, 75, 232, .55); box-shadow: inset 0 0 0 1.5px #AE9BFF, 0 0 30px -10px rgba(140, 110, 255, .85); }
+.wahl .option kbd { color: #fff; background: rgba(255, 255, 255, .14); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22); }
 
 /* Panel rechts: Untertitel füllen den Platz unter der Lage, Antworten und Urteil darunter */
 .dialog { display: flex; flex-direction: column; gap: 12px; align-content: stretch; min-height: 0; }
@@ -876,6 +932,13 @@ kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; 
 .ziel-aktiv.m-gruen { --c: var(--mint); }
 .ziel-aktiv.m-info { --c: #AE9BFF; }
 @keyframes zielPuls { 50% { outline-offset: 7px; } }
+/* Teams (breit): das Fenster rückt ganz nach oben, bündig mit dem Panel rechts, und wird kleiner; der Verlauf darunter ist
+   genauso breit und bekommt den Rest der Höhe. --win-h = Höhe des Fensters (die Hälfte der Spalte, höchstens so hoch, wie die Breite erlaubt). */
+@media (min-width: 960px) and (min-height: 541px) {
+  .mit-transkript:has(.geraet[data-art="teams"]) { justify-content: flex-start; container-type: size; --win-h: min(clamp(200px, 50cqh, 500px), min(100cqw, 900px) * 10.5 / 16); }
+  .mit-transkript:has(.geraet[data-art="teams"]) .geraet { flex: none; height: var(--win-h); }
+  .mit-transkript:has(.geraet[data-art="teams"]) .cc { flex: 1 1 0; height: auto; min-height: 0; width: calc(var(--win-h) * 16 / 10.5); max-width: 100%; }
+}
 /* mittelgroße Fenster: neben Telefon und Panel ist kein Platz – dann steht nur der Verlauf links */
 @media (min-width: 960px) and (max-width: 1099px) and (min-height: 541px) {
   #s-spiel[data-fb-stufe="2"] .geraet { display: none; }

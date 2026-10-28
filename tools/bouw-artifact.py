@@ -9,11 +9,17 @@ dist/artifact/bestanden.json  Liste der veröffentlichten Pfade (für den Publis
 
 dist/site/                dieselbe Seite als vollständiges HTML-Dokument plus Medien –
                           die Website für Cloudflare (wrangler.jsonc zeigt hierher)
+
+dist/Vishing_Challenge_DE_SCORM2004.zip   fürs LMS: imsmanifest.xml, index.html und assets/ im Zip-Wurzelverzeichnis
+dist/Vishing_Challenge_DE_SCORM12.zip     dasselbe für SCORM 1.2
+                          (abgeschlossen + bestanden erst, wenn alle Levels bestanden sind – siehe js/lms.js;
+                          zum Testen ohne LMS: test/lms.html über den lokalen Server)
 """
 import json
 import os
 import re
 import shutil
+import zipfile
 
 HIER = os.path.dirname(os.path.abspath(__file__))
 P = os.path.dirname(HIER)
@@ -81,3 +87,79 @@ seite = eingebettet.replace('<title>Vishing Challenge</title>',
 with open(os.path.join(ziel, 'index.html'), 'w', encoding='utf-8') as f:
     f.write(seite)
 print(f'site: index.html {os.path.getsize(os.path.join(ziel, "index.html")) // 1024} KB, {len(pfade)} Dateien, {summe / 1e6:.1f} MB')
+
+# SCORM: dieselbe Seite (ohne Favicon) plus Medien; das Manifest nennt jede Datei
+kennung = 'CCT_VISHING_CHALLENGE_2026_DE'
+titel = 'Vishing Challenge'
+dateien = ['index.html'] + pfade
+liste = '\n'.join(f'      <file href="{d}"/>' for d in dateien)
+
+MANIFEST_12 = f'''<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="{kennung}" version="1.0"
+          xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+          xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                              http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+  <organizations default="org_1">
+    <organization identifier="org_1">
+      <title>{titel}</title>
+      <item identifier="item_1" identifierref="res_1">
+        <title>{titel}</title>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="res_1" type="webcontent" adlcp:scormtype="sco" href="index.html">
+{liste}
+    </resource>
+  </resources>
+</manifest>
+'''
+
+# 2004: kein Bestehen über die Punktzahl (satisfiedByMeasure) – das SCO meldet completion_status und success_status selbst,
+# und zwar erst, wenn beide Levels bestanden sind
+MANIFEST_2004 = f'''<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="{kennung}" version="1.0"
+          xmlns="http://www.imsglobal.org/xsd/imscp_v1p1"
+          xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_v1p3"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.imsglobal.org/xsd/imscp_v1p1 imscp_v1p1.xsd
+                              http://www.adlnet.org/xsd/adlcp_v1p3 adlcp_v1p3.xsd">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>2004 4th Edition</schemaversion>
+  </metadata>
+  <organizations default="org_1">
+    <organization identifier="org_1">
+      <title>{titel}</title>
+      <item identifier="item_1" identifierref="res_1">
+        <title>{titel}</title>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="res_1" type="webcontent" adlcp:scormType="sco" href="index.html">
+{liste}
+    </resource>
+  </resources>
+</manifest>
+'''
+
+
+def paket(name, manifest):
+    ziel = os.path.join(P, 'dist', name)
+    with zipfile.ZipFile(ziel, 'w', zipfile.ZIP_DEFLATED) as z:
+        z.writestr('imsmanifest.xml', manifest)          # im Wurzelverzeichnis, nicht in einem Unterordner
+        z.writestr('index.html', eingebettet)
+        for pf in pfade:
+            z.write(os.path.join(P, pf), pf)
+    print(f'scorm: {name} ({os.path.getsize(ziel) / 1e6:.1f} MB)')
+
+
+paket('Vishing_Challenge_DE_SCORM2004.zip', MANIFEST_2004)
+paket('Vishing_Challenge_DE_SCORM12.zip', MANIFEST_12)

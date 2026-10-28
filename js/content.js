@@ -65,8 +65,8 @@ window.CONTENT = {
      „Details anzeigen“ geht die Signale einzeln durch, zum Schluss „Das schützt dich“ (tipp des Anrufs).
      stempel steht in der Auswertung neben jedem Anruf. */
   feedback: {
-    entlarvt: { stempel: 'Entlarvt', titel: 'Entlarvt!', text: 'Das war ein KI-Fake – und du hast ihn erkannt. Der Hacker geht leer aus.' },
-    getaeuscht: { stempel: 'Getäuscht', titel: 'Getäuscht!', text: 'Das war ein KI-Fake. Der Hacker kassiert: {beute}.' },
+    entlarvt: { stempel: 'Entlarvt', titel: 'Entlarvt!', text: 'Das war Vishing – und du hast es erkannt. Der Hacker geht leer aus.' },
+    getaeuscht: { stempel: 'Getäuscht', titel: 'Getäuscht!', text: 'Das war Vishing. Der Hacker kassiert: {beute}.' },
     echtErkannt: { stempel: 'Echt', titel: 'Echt erkannt!', text: 'Richtig – der Anruf war echt.' },
     fehlalarm: { stempel: 'Fehlalarm', titel: 'Fehlalarm!', text: 'Der Anruf war echt. Kein Schaden: Lieber einmal zu viel geprüft als einmal zu wenig. Aber hier sprach vieles für einen echten Anruf.' },
     zuSpaet: { stempel: 'Zu spät', titel: 'Zu spät!', text: 'Richtig erkannt – aber zu spät. {schaden} Der Hacker kassiert: {beute}.' },
@@ -361,23 +361,28 @@ window.CONTENT = {
   ],
 
   /* ---------------- Levels ----------------
-     anzahl = so viele Anrufe aus der Liste oben, der Reihe nach.
+     anzahl = so viele Anrufe aus der Liste oben, der Reihe nach; mindestens = so viele müssen richtig sein,
+     sonst wird das Level wiederholt (im LMS gilt die Challenge erst als abgeschlossen, wenn alle Levels bestanden sind).
      Nach Level 1 kommt der Sicherheitstipp, nach dem letzten Level „Zum Schluss“ (unten). */
   levels: [
-    { anzahl: 3, kicker: 'Hör genau hin – und hak nach.' },
-    { anzahl: 3, kicker: 'Anrufe im Job – wem kannst du trauen?' }
+    { anzahl: 3, mindestens: 2, kicker: 'Hör genau hin – und hak nach.' },
+    { anzahl: 3, mindestens: 2, kicker: 'Anrufe im Job – wem kannst du trauen?' }
   ],
   levelIntro: {
     kicker: 'Level {n} von {gesamt}',
+    kickerNochmal: 'Level {n} von {gesamt} · neuer Versuch',
     titel: 'Bereit für Level {n}?',
     anrufe: 'Anrufe',
+    ziel: '{n} richtig zum Bestehen',
     los: 'Los geht’s'
   },
   levelEnde: {
     kicker: 'Level {n} von {gesamt} · Auswertung',
     perfekt: 'Perfekt! Kein Fake kam durch.',
     gut: 'Level {n} geschafft!',
-    knapp: 'Da geht noch mehr.',
+    nichtBestanden: 'Noch nicht geschafft.',
+    nichtBestandenText: 'Du brauchst mindestens {mindestens} von {gesamt} richtig. Spiel das Level noch einmal – die Hinweise aus dem Feedback helfen dir.',
+    ziel: 'Zum Bestehen',
     richtig: '{richtig} von {gesamt} richtig erkannt',
     beute: 'Hacker-Beute in diesem Level',
     beuteNull: 'Der Hacker ging leer aus.',
@@ -387,7 +392,8 @@ window.CONTENT = {
     zumTipp: 'Weiter zum Sicherheitstipp',
     naechstesLevel: 'Weiter zu Level {n}',
     zumSchluss: 'Weiter zum Abschluss',
-    zumErgebnis: 'Zur Auswertung'
+    zumErgebnis: 'Zur Auswertung',
+    wiederholen: 'Level {n} wiederholen'
   },
 
   /* ---------------- Sicherheitstipp nach Level 1: Vishing-Nugget ----------------
@@ -483,6 +489,8 @@ window.CONTENT = {
     ],
     nachgehakt: 'mal nachgehakt',
     nochmal: 'Nochmal spielen',
+    lms: 'Bestanden! Dein Ergebnis wurde an das LMS übermittelt.',
+    weiterSpielen: 'Weiter mit Level {n}',
     kleingedruckt: 'Alle Stimmen und Bilder in dieser Challenge wurden mit KI erzeugt – auch die der echten Anrufer.',
     quellen: 'Hintergrund: Lagebilder von Polizei und Verbraucherzentralen zu Vishing und KI-Schockanrufen, Sicherheitsberichte zu Teams-Vishing (2026) sowie die bekannten Fälle eines britischen Energieversorgers (2019), Arup (2024) und Ferrari (2024).'
   }

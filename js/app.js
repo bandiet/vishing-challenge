@@ -3,8 +3,9 @@
    Start (Titel, Welle, fliegende Symbole) → „Bereit für Level 1?“ → Intro
    ohne Stimme (Stimmklon-Werkbank) → Level 1 (3 Anrufe) → Level-Auswertung
    → Sicherheitstipp (Vishing-Nugget, drei Lehren) → Level 2 (3 Anrufe) → Level-Auswertung
-   → Zum Schluss (letzter Tipp, Frage, Rückruf-Regel) → Auswertung. Punkte = die Beute des Hackers (je weniger, desto besser);
-   ein Klick auf die Beute oben holt den Hacker herein.
+   → Zum Schluss (letzter Tipp, Frage mit Rückruf-Regel) → Auswertung. Punkte = die Beute des Hackers (je weniger, desto besser);
+   ein Klick auf die Beute oben holt den Hacker herein. Wer in einem Level weniger als `mindestens` Anrufe richtig hat,
+   spielt es noch einmal; im LMS (js/lms.js) ist die Challenge erst abgeschlossen und bestanden, wenn alle Levels geschafft sind.
    Jeder Anruf: Lage → Stille → Klingeln → Gespräch (zwei
    Wahlrunden) → Urteil im Panel → Feedback im Panel wie in der Phishing Challenge
    (Ergebnis + das Entscheidende, dann auf Wunsch die Signale einzeln, zum Schluss „Das schützt dich“).
@@ -13,6 +14,7 @@
 (function () {
   const C = window.CONTENT;
   const K = window.Klang;
+  const LMS = window.LMS;
   const $ = id => document.getElementById(id);
   const app = $('app');
   const ohneTags = t => t.replace(/\[[^\]]*\]/g, ' ').replace(/\s+/g, ' ').trim();
@@ -29,12 +31,17 @@
     cc: false, lauf: null, epoche: 0, karte: 0, introGesehen: false
   };
   const f = (t, w) => String(t).replace(/\{(\w+)\}/g, (m, k) => (w && k in w ? w[k] : m));
+  let testModus = false;   // Test-Sprünge (#anruf3 …) speichern nichts und melden nichts ans LMS
 
   /* ================= Level ================= */
   const LV = C.levels;
   const lvStart = l => LV.slice(0, l).reduce((n, x) => n + x.anzahl, 0);
   const levelVon = i => { let n = 0; for (let l = 0; l < LV.length; l++) { n += LV[l].anzahl; if (i < n) return l; } return LV.length - 1; };
   const istRichtig = e => !!(e && e.richtig && !e.zuSpaet);
+  // so viele Anrufe eines Levels müssen richtig sein, sonst wird es wiederholt
+  const mindestens = l => Math.min(LV[l].anzahl, LV[l].mindestens || LV[l].anzahl);
+  const richtigIm = l => C.anrufe.slice(lvStart(l), lvStart(l) + LV[l].anzahl).filter((a, k) => istRichtig(S.ergebnisse[lvStart(l) + k])).length;
+  const bestanden = l => richtigIm(l) >= mindestens(l);
 
   /* ================= Bildschirme ================= */
   function zeige(id) {
@@ -296,10 +303,10 @@
     beat.classList.remove('raus'); void beat.offsetWidth; beat.classList.add('rein');
 
     if (b.art === 'ring') {
-      K.musikAus(2.6);   // danach ist es still, bis das Telefon klingelt
-      await warte(2600);
+      K.musikAus(2);   // danach ist es still, bis das Telefon klingelt
+      await warte(2000);
       beat.classList.remove('rein'); beat.classList.add('raus');
-      await warte(900);
+      await warte(700);
       return;
     }
     K.fx.schlag();
@@ -465,8 +472,8 @@
     vorladen(a);
     const naechster = C.anrufe[i + 1]; if (naechster) setTimeout(() => vorladen(naechster), 3000);
 
-    // Ton: nach dem Intro komplett still (nur kurz – das Intro hat eben „Gleich klingelt dein Telefon“ gesagt); sonst leise Musik, die vor dem Klingeln abbricht
-    const verzoegerung = opt.still ? 2200 : 6200;
+    // Ton: nach dem Intro komplett still (nur kurz – das Intro hat eben „Gleich klingelt dein Telefon“ gesagt); sonst kurz leise Musik, die vor dem Klingeln abbricht
+    const verzoegerung = opt.still ? 1200 : 4200;
     if (!opt.still) {
       K.musik('intro', 0.2, 1.5);
       setTimeout(() => { if (ep === S.epoche) K.musikAus(1.4); }, verzoegerung - 1900);
@@ -496,21 +503,25 @@
   // Die Liste liegt unter allem anderen und nimmt keine Klicks an; neue Zeilen kommen ruhig, nicht im Takt der Bildwiederholung.
   // Beim falschen Helpdesk (c3) ist das Postfach anfangs leer und läuft dann langsam voll, bis kein Platz mehr ist.
   // Zeilen wie im Mailprogramm: Kürzel, Absender, Uhrzeit, Betreff; ungelesene fett mit Balken links. Die Zahl am Ordner = ungelesen.
+  // Rechts der Lesebereich: die oberste Mail ist geöffnet (Text nur als graue Zeilen); beim Spam-Ansturm ist nichts ausgewählt.
   function posteingang(a) {
     clearInterval(posteingang.id);
-    const el = $('win-mails'), neuEl = $('win-mails-neu'), liste = $('win-mail-liste');
+    const el = $('win-mails'), neuEl = $('win-mails-neu'), liste = $('win-mail-liste'), lesen = $('win-lesen');
     const [h, m] = a.zeit.split(', ')[1].split(':').map(Number);
     const uhr = vorMin => { const t = (h * 60 + m - vorMin + 1440) % 1440; return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); };
-    const zeile = ([von, betreff], wann, klasse) => {
+    const kopf = von => {
       const name = von.includes('@') ? von.split('@')[1] : von;
-      const kuerzel = (von.includes('@') ? name[0] : von.split(' ').map(w => w[0]).join('').slice(0, 2)).toUpperCase();
-      const farbe = MAIL_FARBEN[[...name].reduce((s, c) => s + c.charCodeAt(0), 0) % MAIL_FARBEN.length];
+      const kuerzel = (von.includes('@') ? name[0] : von.split(/[\s-]+/).map(w => w[0]).join('').slice(0, 2)).toUpperCase();
+      return `<i class="m-av" style="--c:${MAIL_FARBEN[[...name].reduce((s, c) => s + c.charCodeAt(0), 0) % MAIL_FARBEN.length]}">${esc(kuerzel)}</i>`;
+    };
+    const zeile = ([von, betreff], wann, klasse) => {
       const li = document.createElement('li'); li.className = klasse;
-      li.innerHTML = `<i class="m-av" style="--c:${farbe}">${esc(kuerzel)}</i><span class="m-von">${esc(von)}</span><time>${wann}</time><span class="m-betreff">${esc(betreff)}</span>`;
+      li.innerHTML = `${kopf(von)}<span class="m-von">${esc(von)}</span><time>${wann}</time><span class="m-betreff">${esc(betreff)}</span>`;
       return li;
     };
     liste.innerHTML = ''; neuEl.textContent = '';
     if (a.id === 'c3') {
+      lesen.innerHTML = `<div class="ml-leer"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/></svg><b>Element zum Lesen auswählen</b><span>Nichts ausgewählt</span></div>`;
       let n = 0, k = 0; el.textContent = '';
       posteingang.id = setInterval(() => {
         n += 1 + Math.floor(Math.random() * 3);
@@ -519,9 +530,13 @@
         while (liste.children.length > 40) liste.lastChild.remove();   // was nicht mehr hineinpasst, schneidet die Liste ab
       }, 650);
     } else {
-      const mails = a.posteingang || NORMAL;
-      el.textContent = '1';
-      mails.forEach((x, k) => liste.append(zeile(x, uhr(8 + k * 47), k ? '' : 'ungelesen')));
+      const mails = a.posteingang || NORMAL, [von, betreff] = mails[0];
+      el.textContent = mails.length > 1 ? '1' : '';
+      mails.forEach((x, k) => liste.append(zeile(x, uhr(8 + k * 47), ['gewaehlt', 'ungelesen'][k] || '')));
+      const text = [96, 88, 92, 54, 0, 90, 84, 70, 0, 38].map(w => w ? `<i style="width:${w}%"></i>` : '<i class="absatz"></i>').join('');
+      lesen.innerHTML = `<p class="ml-betreff">${esc(betreff)}</p>
+        <div class="ml-von">${kopf(von)}<span><b>${esc(von)}</b><small>An: Du</small></span><time>${esc(a.zeit.slice(0, 2))} ${uhr(8)}</time></div>
+        <div class="ml-text">${text}</div>`;
     }
   }
 
@@ -798,6 +813,7 @@
     const beute = !a.echt && (!richtig || zuSpaet) ? a.beute : 0;
     const erg = { id: a.id, wahl, richtig, zuSpaet, beute, gut, zuege: [...L.zuege], pfad: [...L.pfad], aufgelegt: L.aufgelegt };
     S.ergebnisse[S.i] = erg;
+    if (!testModus) LMS.interaktion(a.id, wahl === 'echt' ? 'echt' : 'vishing', a.echt ? 'echt' : 'vishing', istRichtig(erg));
     const alt = S.beute; S.beute += beute;
     setTimeout(() => {
       u.hidden = true;
@@ -938,22 +954,19 @@
   }
 
   /* ================= Level-Start (wie in der Serie: „Bereit für Level X?“) ================= */
-  function levelIntro(l) {
+  function levelIntro(l, nochmal) {
     ++S.epoche;
     S.level = l; S.i = lvStart(l);
     const lv = LV[l], LI = C.levelIntro, n = lv.anzahl, ep = S.epoche;
     zeige('s-level');
     K.musik('intro', 0.3, 1.5);
-    $('lv-kicker').textContent = f(LI.kicker, { n: l + 1, gesamt: LV.length });
-    const ic = $('lv-icon');
-    ic.innerHTML = BILD.telefon('lvt') + `<span class="lv-zahl" id="lv-zahl">${n}</span>`;
+    $('lv-kicker').textContent = f(nochmal ? LI.kickerNochmal : LI.kicker, { n: l + 1, gesamt: LV.length });
+    $('lv-icon').innerHTML = BILD.telefon('lvt');
     $('lv-titel').textContent = f(LI.titel, { n: l + 1 });
     $('lv-unter').textContent = lv.kicker;
-    $('lv-info').innerHTML = `<span>${chipHoerer}<b>${n}</b> ${esc(LI.anrufe)}</span>`;
+    $('lv-info').innerHTML = `<span>${chipHoerer}<b>${n}</b> ${esc(LI.anrufe)}</span><span>${HAKEN}${esc(LI.ziel).replace('{n}', `<b>${mindestens(l)}</b>`)}</span>`;
     $('lv-los').innerHTML = esc(LI.los) + ' ' + PFEIL;
     vorladen(C.anrufe[S.i]);
-    // Anrufe kommen einzeln (nicht wie Mails im Stapel): nur die Zahl springt an der Kachel auf
-    setTimeout(() => { if (ep === S.epoche) { $('lv-zahl').classList.add('da'); K.fx.pop(1); } }, reduziert ? 0 : 900);
     setTimeout(() => { if (ep === S.epoche) $('lv-los').focus({ preventScroll: true }); }, 400);
   }
   $('lv-los').addEventListener('click', () => {
@@ -972,34 +985,48 @@
     S.i = a0 + n - 1;
     $('hud-beute-wert').textContent = euro(S.beute);
     const anrufe = C.anrufe.slice(a0, a0 + n), erg = anrufe.map((a, k) => S.ergebnisse[a0 + k]);
-    const r = erg.filter(istRichtig).length, beute = erg.reduce((x, e) => x + ((e && e.beute) || 0), 0);
-    const perfekt = r === n, gut = r * 2 >= n, letztes = l === LV.length - 1;
-    const titel = perfekt ? LE.perfekt : gut ? f(LE.gut, { n: l + 1 }) : LE.knapp;
-    const weiterText = letztes ? LE.zumSchluss : (l === 0 && !S.pauseFertig ? LE.zumTipp : f(LE.naechstesLevel, { n: l + 2 }));
+    const r = richtigIm(l), beute = erg.reduce((x, e) => x + ((e && e.beute) || 0), 0);
+    const perfekt = r === n, gut = bestanden(l), letztes = l === LV.length - 1;
+    const titel = perfekt ? LE.perfekt : gut ? f(LE.gut, { n: l + 1 }) : LE.nichtBestanden;
+    // nicht bestanden: dasselbe Level noch einmal
+    const weiterText = !gut ? f(LE.wiederholen, { n: l + 1 }) : letztes ? LE.zumSchluss : (l === 0 && !S.pauseFertig ? LE.zumTipp : f(LE.naechstesLevel, { n: l + 2 }));
     const mitte = `<span class="m-symbol ${gut ? '' : 'nein'}"><svg viewBox="0 0 24 24"><path d="${gut ? 'm5 12.5 4.5 4.5L19 7.5' : 'M6.5 6.5l11 11M17.5 6.5l-11 11'}"/></svg></span>
       <span class="m-prozent">0 %</span><span class="m-richtig">${esc(f(LE.richtig, { richtig: r, gesamt: n }))}</span>`;
     $('le-karte').innerHTML = `
       <span class="pille-kicker ohne">${esc(f(LE.kicker, { n: l + 1, gesamt: LV.length }))}</span>${punkte(l)}
       <h1>${esc(titel)}</h1>
-      ${messer(n ? r / n : 0, mitte)}
+      ${gut ? '' : `<p class="le-hinweis">${esc(f(LE.nichtBestandenText, { mindestens: mindestens(l), gesamt: n }))}</p>`}
+      ${messer(n ? r / n : 0, mitte, mindestens(l) / n, LE.ziel)}
       <div class="le-kacheln">${erg.map((e, k) => `<span class="le-kachel ${istRichtig(e) ? 'ja' : 'nein'}" style="--i:${k}" title="${esc(anrufe[k].storyTitel)}">${istRichtig(e) ? HAKEN : KREUZ}</span>`).join('')}</div>
       <div class="le-beute ${beute ? '' : 'null'}"><img src="assets/hacker-face.png" alt=""><span><small>${esc(LE.beute)}</small><b>${beute ? euro(beute) : esc(LE.beuteNull)}</b></span></div>
       <details class="le-details"><summary><svg class="ico" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>${esc(LE.details)}</summary>
         <ol class="le-liste">${anrufe.map((a, k) => `<li class="${istRichtig(erg[k]) ? 'ja' : 'nein'}">${istRichtig(erg[k]) ? HAKEN : KREUZ}<span class="le-titel">${esc(a.storyTitel)}</span>
           <span class="tag ${a.echt ? 'tag-echt' : 'tag-fake'}">${esc(a.echt ? LE.warEcht : LE.warFake)}</span></li>`).join('')}</ol></details>
-      <div class="le-fuss allein"><button class="btn btn-gross btn-mint" id="le-weiter" type="button">${esc(weiterText)} ${PFEIL}</button></div>`;
+      <div class="le-fuss allein"><button class="btn btn-gross btn-mint" id="le-weiter" type="button">${gut ? esc(weiterText) + ' ' + PFEIL : NOCHMAL + esc(weiterText)}</button></div>`;
     zeige('s-levelende');
     K.musik('intro', 0.3, 1.5);
     messerStarten($('le-karte'));
     setTimeout(() => (gut ? K.fx.richtig : K.fx.falsch)(), reduziert ? 0 : 300);
-    if (!beute) setTimeout(() => konfetti(perfekt ? 120 : 80, 'cct'), reduziert ? 0 : 1500);
+    if (gut && !beute) setTimeout(() => konfetti(perfekt ? 120 : 80, 'cct'), reduziert ? 0 : 1500);
+    if (gut && !testModus) { LMS.fortschritt((l + 1) / LV.length); merken(); }
     $('le-weiter').addEventListener('click', () => {
       K.fx.klick();
-      if (letztes) nuggetZeigen('schluss');
+      if (!gut) levelWiederholen(l);
+      else if (letztes) nuggetZeigen('schluss');
       else if (l === 0 && !S.pauseFertig) nuggetZeigen('pause');
       else levelIntro(l + 1);
     });
     setTimeout(() => { const b = $('le-weiter'); if (b) b.focus({ preventScroll: true }); }, 900);
+  }
+
+  // Nicht bestanden: die Ergebnisse des Levels verfallen, auch die Beute daraus – dann dieselben Anrufe noch einmal (ohne Intro)
+  function levelWiederholen(l) {
+    for (let i = lvStart(l); i < lvStart(l) + LV[l].anzahl; i++) {
+      if (S.ergebnisse[i]) S.beute -= S.ergebnisse[i].beute || 0;
+      delete S.ergebnisse[i];
+    }
+    $('hud-beute-wert').textContent = euro(S.beute);
+    levelIntro(l, true);
   }
 
   /* ================= Nugget: nach Level 1 der Sicherheitstipp (drei Lehren),
@@ -1037,20 +1064,19 @@
     const letzte = i === n - 1;
     $('nugget-weiter').innerHTML = esc(!letzte ? P.weiter : S.nugget === 'schluss' ? T.zurFrage : f(C.levelEnde.naechstesLevel, { n: 2 })) + ' ' + PFEIL;
     $('s-pause').scrollTop = 0;
-    nuggetUeberlauf();
+    ueberlauf($('s-pause'));
     K.fx.pop(i);
   }
-  // Ragt die Karte über den Bildschirm, bekommen die klebenden Knöpfe unten einen Verlauf
-  function nuggetUeberlauf() {
-    const sc = $('s-pause');
+  // Ragt der Inhalt über den Bildschirm, bekommen die klebenden Knöpfe unten einen Verlauf (Nugget, Frage, Auswertung)
+  function ueberlauf(sc) {
     sc.classList.toggle('ueberlauf', sc.scrollHeight > sc.clientHeight + 2);
   }
-  addEventListener('resize', () => { if (app.dataset.screen === 's-pause') nuggetUeberlauf(); });
+  addEventListener('resize', () => { if (['s-pause', 's-ende'].includes(app.dataset.screen)) ueberlauf($(app.dataset.screen)); });
   function karteWeiter() {
     K.fx.klick();
     if (S.karte < C[S.nugget].karten.length - 1) karteZeigen(S.karte + 1);
     else if (S.nugget === 'schluss') frageZeigen();
-    else { S.pauseFertig = true; levelIntro(1); }
+    else { S.pauseFertig = true; merken(); levelIntro(1); }
   }
   $('nugget-weiter').addEventListener('click', karteWeiter);
   $('nugget-zurueck').addEventListener('click', () => { if (S.karte > 0) { K.fx.klick(); karteZeigen(S.karte - 1); } });
@@ -1062,7 +1088,7 @@
     sc.scrollTop = 0;
     inner.classList.remove('rein'); void inner.offsetWidth; inner.classList.add('rein');
     $('pause-szene').textContent = P.szene; $('pause-frage').textContent = P.frage;
-    $('pause-antwort').hidden = true; $('pause-regel').hidden = true; $('pause-weiter').hidden = true;
+    $('pause-antwort').hidden = true; $('pause-fuss').hidden = true;
     S.pause = null;
     $('pause-optionen').innerHTML = P.optionen.map((o, i) =>
       `<button class="option pause-option" type="button" data-i="${i}" style="--i:${i};--farbe:${o.farbe || 'var(--lilac)'}"><span class="p-icon">${icon(o.icon)}</span><span class="p-text">${esc(o.text)}</span><kbd>${String.fromCharCode(65 + i)}</kbd></button>`).join('');
@@ -1079,15 +1105,19 @@
       b.dataset.wert = P.optionen[k].wert;
     });
     (o.wert === 'voll' ? K.fx.richtig : o.wert === 'halb' ? K.fx.wahl : K.fx.falsch)();
+    // eine Rückmeldung: Antwort und Erklärung, darunter in derselben Box die Rückruf-Regel
     const an = $('pause-antwort'); an.dataset.wert = o.wert;
     $('pause-antwort-titel').textContent = o.titel; $('pause-antwort-text').textContent = o.erklaerung;
-    an.hidden = false;
     $('pause-regel-titel').textContent = P.regel.titel;
-    $('pause-regel-punkte').innerHTML = P.regel.punkte.map((r, k) => `<li style="--i:${k}">${icon(r.icon)}<div><b>${r.titel}</b><span>${r.text}</span></div></li>`).join('');
+    $('pause-regel-punkte').innerHTML = P.regel.punkte.map((r, k) => `<li style="--i:${k}">${icon(r.icon)}<div><b>${esc(r.titel)}</b><span>${esc(r.text)}</span></div></li>`).join('');
+    an.hidden = false;
+    // der Knopf klebt unten; liegt die Rückmeldung tief, rückt sie ins Bild
     setTimeout(() => {
-      $('pause-regel').hidden = false; $('pause-weiter').hidden = false; $('pause-weiter').innerHTML = esc(C.levelEnde.zumErgebnis) + ' ' + PFEIL;
-      scrollZu($('s-pause'), $('pause-weiter'));
-    }, 500);
+      $('pause-fuss').hidden = false; $('pause-weiter').innerHTML = esc(C.levelEnde.zumErgebnis) + ' ' + PFEIL;
+      const sc = $('s-pause'), oben = an.getBoundingClientRect().top - sc.getBoundingClientRect().top;
+      ueberlauf(sc);
+      if (oben > sc.clientHeight * .45) sc.scrollTo({ top: sc.scrollTop + oben - 90, behavior: reduziert ? 'auto' : 'smooth' });
+    }, 350);
   }
   $('pause-weiter').addEventListener('click', () => { K.fx.klick(); ende(); });
 
@@ -1124,9 +1154,12 @@
         <section class="f-block karte"><h2>${esc(A.akte)}</h2><ol class="akte">${akte}</ol></section>
         <section class="f-block karte"><h2>${esc(A.regelnTitel)}</h2><ol class="regeln">${A.regeln.map((r, i) => `<li style="--i:${i}"><b>${esc(r.titel)}</b><span>${esc(r.text)}</span></li>`).join('')}</ol></section>
       </div>
-      <button class="btn btn-gross btn-mint" id="ende-nochmal" type="button">${NOCHMAL}${esc(A.nochmal)}</button>
       <p class="quellen">${esc(A.quellen)}</p>
-      <p class="quellen">${esc(A.kleingedruckt)}</p>`;
+      <p class="quellen">${esc(A.kleingedruckt)}</p>
+      <div class="f-fuss">
+        ${S.lmsGemeldet ? `<p class="f-lms">${HAKEN}${esc(A.lms)}</p>` : ''}
+        <button class="btn btn-gross btn-mint" id="ende-nochmal" type="button">${NOCHMAL}${esc(A.nochmal)}</button>
+      </div>`;
     zeige('s-ende');
     K.musik('auswertung', 0.45, 2);
     messerStarten($('finale'));
@@ -1136,6 +1169,28 @@
     setTimeout(() => (richtig >= N - 2 ? K.fx.richtig : K.fx.stempel)(), reduziert ? 0 : 500);
     if (!S.beute) setTimeout(() => konfetti(140, 'bunt'), reduziert ? 0 : 1300);
     $('ende-nochmal').addEventListener('click', () => { K.fx.klick(); neuesSpiel(); levelIntro(0); });
+    ueberlauf($('s-ende'));
+  }
+
+  /* ================= LMS: Stand merken, abschließen ================= */
+  // Gemerkt wird nach jedem bestandenen Level und nach dem Sicherheitstipp: bestandene Levels, ihre Ergebnisse und die Beute.
+  // Beim nächsten Öffnen geht es dort weiter (siehe Start unten).
+  function merken() {
+    if (testModus || !LMS.aktiv()) return;
+    let l = 0; while (l < LV.length && bestanden(l)) l++;
+    const e = S.ergebnisse.slice(0, lvStart(l)).map(x => [x.id, x.wahl === 'echt' ? 1 : 0, x.richtig ? 1 : 0, x.zuSpaet ? 1 : 0, x.beute || 0, x.gut || 0]);
+    LMS.speichern({ v: 1, l, p: S.pauseFertig ? 1 : 0, b: S.beute, e }, 'level' + Math.min(l + 1, LV.length));
+    // Alle Levels bestanden: abgeschlossen und bestanden, Punkte = Anteil der richtig erkannten Anrufe (letzter Versuch je Level)
+    if (l === LV.length && !S.lmsGemeldet) {
+      const richtig = C.anrufe.filter((a, i) => istRichtig(S.ergebnisse[i])).length;
+      S.lmsGemeldet = LMS.abschliessen(100 * richtig / C.anrufe.length, true);
+    }
+  }
+  function standLaden(d) {
+    if (!d || d.v !== 1 || !(d.l > 0) || d.l >= LV.length) return false;
+    S.ergebnisse = []; S.beute = d.b || 0; S.pauseFertig = !!d.p;
+    (d.e || []).forEach((x, i) => { S.ergebnisse[i] = { id: x[0], wahl: x[1] ? 'echt' : 'fake', richtig: !!x[2], zuSpaet: !!x[3], beute: x[4], gut: x[5], zuege: [], pfad: [] }; });
+    return d.l;
   }
 
   /* ================= Lage-Umschalter (schmal) ================= */
@@ -1173,9 +1228,28 @@
   untertitelSetzen(S.cc);
   zeige('s-start');
 
-  // Testsprünge: #intro, #l1, #l2, #anruf1 … #anruf6, #e1, #e2, #pause, #schluss, #frage, #ende
+  // Im LMS: Verbindung aufnehmen; wer schon ein Level bestanden hat, macht beim nächsten Level weiter
+  LMS.init();
+  addEventListener('pagehide', () => LMS.beenden());
+  addEventListener('beforeunload', () => LMS.beenden());
+  const weiterAb = standLaden(LMS.laden());
+  if (weiterAb) {
+    $('start-los').innerHTML = esc(f(C.auswertung.weiterSpielen, { n: weiterAb + 1 })) + ' ' + PFEIL;
+    $('start-los').addEventListener('click', ev => {
+      ev.stopImmediatePropagation();
+      K.init(); K.fx.klick();
+      const stand = { e: S.ergebnisse, b: S.beute, p: S.pauseFertig };
+      neuesSpiel();
+      S.ergebnisse = stand.e; S.beute = stand.b; S.pauseFertig = stand.p; S.introGesehen = true;
+      $('hud-beute-wert').textContent = euro(S.beute);
+      if (weiterAb === 1 && !S.pauseFertig) nuggetZeigen('pause'); else levelIntro(weiterAb);
+    }, { capture: true, once: true });
+  }
+
+  // Testsprünge: #intro, #l1, #l2, #anruf1 … #anruf6, #e1, #e2, #pause, #schluss, #frage, #ende (fremde Hashes, z. B. vom LMS, zählen nicht)
   const sprung = location.hash.slice(1);
-  if (sprung) {
+  if (/^(intro|l\d|anruf\d|e\d|pause|schluss|frage|ende)$/.test(sprung)) {
+    testModus = true;
     const testErgebnisse = () => C.anrufe.forEach((a, i) => {
       const richtig = i !== 1;
       S.ergebnisse[i] = { richtig, zuSpaet: false, gut: i % 2 ? 1 : 2, beute: !a.echt && !richtig ? a.beute : 0, zuege: [], pfad: [] };
